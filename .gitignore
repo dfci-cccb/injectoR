@@ -10,6 +10,9 @@
 # RStudio files
 .Rproj.user/
 
+# R
+R/package
+
 # Eclipse
 .settings/
 .project

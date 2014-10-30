@@ -1,7 +1,6 @@
 # Dependency injection framework for R
 # 
 # Author: levk
-###############################################################################
 
 # Default framework environment global
 .environment <- new.env ();
@@ -70,13 +69,13 @@ inject <- function (dependencies, callback, environment = .environment) {
 
 }
 
-bind ('greeting', callback = function () { 'from the first R DI framework' });
-bind ('world', callback = function () { 'world' });
-bind ('hello', c ('world'), callback = function (world) { c ('hello', world) });
-inject (c ('hello', 'greeting'), function (hello, greeting) { 
-  print (c ("HELLO=", hello));
-  print (c ("GREETING=", greeting));
-});
+#bind ('greeting', callback = function () { 'from the first R DI framework' });
+#bind ('world', callback = function () { 'world' });
+#bind ('hello', c ('world'), callback = function (world) { c ('hello', world) });
+#inject (c ('hello', 'greeting'), function (hello, greeting) { 
+#  print (c ("HELLO=", hello));
+#  print (c ("GREETING=", greeting));
+#});
 
-shim ('agrmt', 'http://cran.at.r-project.org/src/contrib/Archive/agrmt/agrmt_1.31.tar.gz');
-inject ('agrmt', function (agrmt) { print (agrmt); });
+#shim ('agrmt', 'http://cran.at.r-project.org/src/contrib/Archive/agrmt/agrmt_1.31.tar.gz');
+#inject ('agrmt', function (agrmt) { print (agrmt); });
