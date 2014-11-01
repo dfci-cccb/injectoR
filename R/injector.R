@@ -51,7 +51,7 @@ shim <- function (source, environment = .environment) {
   }, error = function (error) {
     unlink (location, recursive = TRUE);
     stop (error);
-  });
+  }, finally = function () { unlink ("package"); });
 }
 
 # Inject a callback function with dependencies
@@ -76,3 +76,9 @@ inject <- function (dependencies = NULL, callback, environment = .environment) {
   if (length (errors) == 0) do.call (callback, parameters)
   else stop (errors);
 }
+
+# Installs a module from repository
+install <- function (key, version, repository = NULL) { stop ("Not yet implemented"); }
+
+# Publishes a module to repository
+publish <- function (key, version, repository = NULL) { stop ("Not yet implemented"); }
