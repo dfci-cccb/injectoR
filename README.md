@@ -3,7 +3,17 @@ injectoR
 
 Dependency injection for R
 
-This is a very early draft and the interface may change.
+This is a very early draft and the interface may change. You may use the current state of
+the injector with:
+
+```
+tryCatch ({
+  download.file ('https://raw.githubusercontent.com/dfci-cccb/injectoR/7c933b47d89d339b7e0e5c104beab07727d2bf9a/R/injector.R',
+                 'injector', method = 'curl');
+  source ('injector');
+}, finally { unlink ('injector'); });
+```
+========
 
 This tool is meant to make development and faster making it clear what parts of your script
 depend on what functionality as well as making this dependency injectable

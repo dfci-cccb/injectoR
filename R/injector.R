@@ -2,10 +2,10 @@
 # 
 # Author: levk
 
-# Exports: singleton, prototype, define(), shim(), inject()
+# Exports: singleton, default, define(), shim(), inject()
 (function () {
   # Default framework environment global
-  .environment <- new.env ();
+  .environment <- list ();
 
   # Singleton scope handler; bindings of singleton scope are provided for once and cached
   singleton <<- function (key, provider, environment) {
