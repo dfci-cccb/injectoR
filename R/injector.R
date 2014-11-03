@@ -14,12 +14,12 @@
   }
   
   # Prototype scope handler, bindings of prototype scope are provided for every time they are injected
-  prototype <<- function (key, provider, environment) {
+  default <<- function (key, provider, environment) {
     provider ();
   }
   
   # Binds a key
-  define <<- function (key, dependencies = NULL, callback, scope = prototype, showWarnings = TRUE, environment = .environment) {
+  define <<- function (key, dependencies = NULL, callback, scope = default, showWarnings = TRUE, environment = .environment) {
     environment[[ key ]]$dependencies <- if (is.null (dependencies)) names (formals (callback)) else dependencies;
     environment[[ key ]]$callback <- callback;
     environment[[ key ]]$scope <- scope;
@@ -43,12 +43,11 @@
       package <- installed.packages (lib.loc = location)[[ 1 ]];
       library (package, character.only = TRUE, lib.loc = location);
       
-      for (export in ls (paste ("package:", package, sep = ""))) {
-        environment[[ key ]]$dependencies <- list ();
-        environment[[ key ]]$callback <- function () { eval (parse (export)) };
-        environment[[ key ]]$scope <- singleton;
-        environment[[ key ]]$shim <- source;
-      }
+      for (export in ls (paste ("package:", package, sep = "")))
+        define (export,
+                callback = function () { eval (parse (text = export)) },
+                scope = singleton,
+                environment = environment);
     }, error = function (error) {
       unlink (location, recursive = TRUE);
       stop (error);
@@ -68,9 +67,9 @@
           onError (c ("Unbound dependency ", key));
       } else tryCatch ({
           parameters[[ name ]] <- environment[[ key ]]$scope (key, function () {
-                                                                 inject (environment[[ key ]]$dependencies,
-                                                                         environment[[ key ]]$callback);
-                                                               }, environment);
+                                                                inject (environment[[ key ]]$dependencies,
+                                                                        environment[[ key ]]$callback);
+                                                              }, environment);
         }, error = onError, warning = onError);
     }
   

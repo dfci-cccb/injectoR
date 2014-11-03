@@ -69,7 +69,7 @@ You may scope your bindings
 ```
 define ('highlander', callback = function () {
   print ('there must be only one');
-}, scope = singleton); # and then try with scope = prototype
+}, scope = singleton); # and then try without scope!
 
 inject (c ('highlander', 'highlander', 'highlander'), callback = function (h1, h2, h3) {});
 ```
