@@ -43,11 +43,11 @@ define ('greeting', callback = function (name = "stranger") {
   print (paste ("Greetings,", name));
 });
 
-inject (function (greeting) {});
+inject (callback = function (greeting) {});
 
 define ('name', callback = function () { 'Bob' });
 
-inject (function (greeting) {});
+inject (callback = function (greeting) {});
 ```
 
 You may specify dependencies explicitly (useful if the key contains illegal characters)
