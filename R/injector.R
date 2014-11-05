@@ -30,14 +30,12 @@
 
   # Launches the injected callback
   inject <<- function (callback, environment = .environment) {
-    errors <- list ();
     arguments <- list ();
 
     for (key in names (formals (callback)))
-      if (is.null (environment[[ key ]])) {
-        if (is.null (formals (callback)[[ key ]])) errors[[ length (errors) + 1 ]] <- paste ("Unbound non optional dependency on ", key);
-      } else tryCatch ({ arguments[[ key ]] <- environment[[ key ]] () }, error = function (chain) { errors <- c (errors, chain) });
+      if (!is.null (environment[[ key ]]))
+        tryCatch ({ arguments[[ key ]] <- environment[[ key ]] () }, error = function (chain) { errors <- c (errors, chain) });
 
-    if (length (errors) == 0) do.call (callback, arguments) else stop (errors);
+    do.call (callback, arguments);
   };
 }) ();

@@ -2,22 +2,22 @@
 #
 # Author: levk
 
-# Exports request()
+# Exports bootstrap()
 (function () {
-  .root = file.path (.libPaths () [1], "requester");
+  .root = file.path (.libPaths () [1], "bootstrap");
 
   # Download and install packages from source, optionally takes a callback function
   # injecting the package library paths. If the callback function is provided, the
   # function is invoked and the result is returned, otherwise a list of library
   # locations is returned
-  request <<- function (..., callback = NULL, root = .root) {
+  bootstrap <<- function (..., callback = NULL, root = .root) {
     locations <- NULL;
 
     for (source in c (...)) {
       locations <- c (locations,
                       location <- file.path (root,
                                              gsub ("/", .Platform$file.sep,
-                                                   gsub ("\\.", "/", 
+                                                   gsub ("\\.", "/",
                                                          gsub("[:?=*#]", "_", source)))));
       if (!file.exists (location)) tryCatch ({
         download.file (source, 'package', method = 'curl');
