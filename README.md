@@ -11,8 +11,8 @@ source.https <- function (url) {
   tryCatch ({ download.file (url, 'source', method = 'curl'); source ('source'); }, finally = { unlink ('source'); });
 };
 
-source.https ('https://raw.githubusercontent.com/dfci-cccb/injectoR/7c933b47d89d339b7e0e5c104beab07727d2bf9a/R/injector.R');
-source.https ('https://raw.githubusercontent.com/dfci-cccb/injectoR/7c933b47d89d339b7e0e5c104beab07727d2bf9a/R/request.R');
+source.https ('https://raw.githubusercontent.com/dfci-cccb/injectoR/770449429450cf5075edd17618aed3635e6f048b/R/injector.R');
+source.https ('https://raw.githubusercontent.com/dfci-cccb/injectoR/770449429450cf5075edd17618aed3635e6f048b/R/request.R');
 ```
 ========
 
