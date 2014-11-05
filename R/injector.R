@@ -4,76 +4,40 @@
 
 # Exports: singleton, default, define(), shim(), inject()
 (function () {
-  # Default framework environment global
-  .environment <- list ();
+  # Default environment
+  .environment <- new.env ();
 
-  # Singleton scope handler; bindings of singleton scope are provided for once and cached
-  singleton <<- function (key, provider, environment) {
-    if (is.null (environment[[ key ]]$singleton)) environment[[ key ]]$singleton <- provider ();
-    environment[[ key ]]$singleton;
-  }
-  
-  # Prototype scope handler, bindings of prototype scope are provided for every time they are injected
-  default <<- function (key, provider, environment) {
-    provider ();
-  }
-  
-  # Binds a key
-  define <<- function (key, dependencies = NULL, callback, scope = default, showWarnings = TRUE, environment = .environment) {
-    environment[[ key ]]$dependencies <- if (is.null (dependencies)) names (formals (callback)) else dependencies;
-    environment[[ key ]]$callback <- callback;
-    environment[[ key ]]$scope <- scope;
-  }
-  
-  # Shims a legacy package by binding each exported variable after installing it
-  # from source into a directory managed by the framework
-  shim <<- function (source, environment = .environment) {
-    location = file.path (.libPaths ()[1],
-                          gsub ("/", .Platform$file.sep,
-                                gsub ("//", "/", 
-                                      paste ("injectoR/shim/",
-                                             gsub ("\\.", "/", 
-                                                   gsub("[:?=]", "_", source)), sep = ""))));
-    tryCatch ({
-      if (!file.exists (location)) {
-        download.file (source, "package");
-        dir.create (location, showWarnings = FALSE, recursive = TRUE);
-        install.packages ("package", repos = NULL, type = "source", lib = location);
-      }
-      package <- installed.packages (lib.loc = location)[[ 1 ]];
-      library (package, character.only = TRUE, lib.loc = location);
-      
-      for (export in ls (paste ("package:", package, sep = "")))
-        define (export,
-                callback = function () { eval (parse (text = export)) },
-                scope = singleton,
-                environment = environment);
-    }, error = function (error) {
-      unlink (location, recursive = TRUE);
-      stop (error);
-    }, finally = function () { unlink ("package"); });
-  }
-  
-  # Inject a callback function with dependencies
-  inject <<- function (dependencies = NULL, callback, showWarnings = TRUE, environment = .environment) {
+  # The default scope, bindings of this scope are provisioned each time they are injected
+  default <<- function (provider) { provider };
+
+  # Singleton scope, singleton bindings are provisioned once and cached 
+  singleton <<- function (provider) {
+    value <- provider ();
+    function () { value };
+  };
+
+  # Defines a binding formed of key, factory and scope
+  define <<- function (key, factory, scope = default, environment = .environment) {
+    environment[[ key ]] <- scope (function () { inject (factory, environment) });
+  };
+
+  # Shims a package defining each exported variable
+  shim <<- function (package, prefix = '', root = NULL, environment = .environment) {
+    space <- loadNamespace (package, lib.loc = root);
+    for (export in getNamespaceExports (space))
+      define (paste (prefix, export, sep = ''), function () { getExportedValue (space, export) }, singleton);
+  };
+
+  # Launches the injected callback
+  inject <<- function (callback, environment = .environment) {
     errors <- list ();
-    onError <- function (error) { errors[[ length(errors) + 1 ]] <- error; }
-    parameters <- list ();
-  
-    for (key in if (is.null (dependencies)) names (formals (callback)) else dependencies) {
-      name <- if (!is.null (dependencies)) names (formals (callback))[ length (parameters) + 1 ] else key;
+    arguments <- list ();
+
+    for (key in names (formals (callback)))
       if (is.null (environment[[ key ]])) {
-        if (is.null (formals (callback)[[ name ]])) # Has no default value and no binding
-          onError (c ("Unbound dependency ", key));
-      } else tryCatch ({
-          parameters[[ name ]] <- environment[[ key ]]$scope (key, function () {
-                                                                inject (environment[[ key ]]$dependencies,
-                                                                        environment[[ key ]]$callback);
-                                                              }, environment);
-        }, error = onError, warning = onError);
-    }
-  
-    if (length (errors) == 0) do.call (callback, parameters)
-    else stop (errors);
-  }
+        if (is.null (formals (callback)[[ key ]])) errors[[ length (errors) + 1 ]] <- paste ("Unbound non optional dependency on ", key);
+      } else tryCatch ({ arguments[[ key ]] <- environment[[ key ]] () }, error = function (chain) { errors <- c (errors, chain) });
+
+    if (length (errors) == 0) do.call (callback, arguments) else stop (errors);
+  };
 }) ();

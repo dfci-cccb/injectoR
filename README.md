@@ -7,25 +7,35 @@ This is a very early draft and the interface may change. You may use the current
 the injector with:
 
 ```
-tryCatch ({
-  download.file ('https://raw.githubusercontent.com/dfci-cccb/injectoR/7c933b47d89d339b7e0e5c104beab07727d2bf9a/R/injector.R',
-                 'injector', method = 'curl');
-  source ('injector');
-}, finally { unlink ('injector'); });
+source.https <- function (url) {
+  tryCatch ({ download.file (url, 'source', method = 'curl'); source ('source'); }, finally = { unlink ('source'); });
+};
+
+source.https ('https://raw.githubusercontent.com/dfci-cccb/injectoR/7c933b47d89d339b7e0e5c104beab07727d2bf9a/R/injector.R');
+source.https ('https://raw.githubusercontent.com/dfci-cccb/injectoR/7c933b47d89d339b7e0e5c104beab07727d2bf9a/R/request.R');
 ```
 ========
 
-This tool is meant to make development and faster making it clear what parts of your script
+Requester will download and install your dependencies providing a list of library locations
+
+```
+request ('http://cran.at.r-project.org/src/contrib/Archive/agrmt/agrmt_1.31.tar.gz',
+         callback = function (lib.loc) {
+  library ('agrmt', lib.loc = lib.loc);
+});
+```
+
+Injector is meant to make development and faster making it clear what parts of your script
 depend on what functionality as well as making this dependency injectable
 
 ```
-define ('factorial', callback = function () {
+define ('factorial', function () {
   factorial <- function (n) {
     if (n < 1) 1 else n * factorial (n - 1);
   };
 });
 
-inject (callback = function (factorial) {
+inject (function (factorial) {
   factorial (3);
 });
 ```
@@ -39,9 +49,9 @@ version of a library it is supposed to run - if not outright work years after it
 Ideally ofcourse people would use the module definition system laid out here for writing scripts
 
 ```
-shim ('http://cran.at.r-project.org/src/contrib/Archive/agrmt/agrmt_1.31.tar.gz');
+shim ('agrmt');
 
-inject (callback = function (modes) {
+inject (function (modes) {
   # do stuff modes()
 });
 ```
@@ -49,49 +59,67 @@ inject (callback = function (modes) {
 You may optionally inject or provide a default value
 
 ```
-define ('greeting', callback = function (name = "stranger") {
+define ('greeting', function (name = "stranger") {
   print (paste ("Greetings,", name));
 });
 
-inject (callback = function (greeting) {});
+inject (function (greeting) {});
 
 define ('name', callback = function () { 'Bob' });
 
-inject (callback = function (greeting) {});
-```
-
-You may specify dependencies explicitly (useful if the key contains illegal characters)
-
-```
-define ('!', callback = function () {
-  factorial <- function (n) {
-    if (n < 1) 1 else n * factorial (n - 1);
-  };
-});
-
-inject (c ('!'), callback = function (factorial) {
-  factorial (3);
-});
+inject (function (greeting) {});
 ```
 
 You may scope your bindings
 
 ```
-define ('highlander', callback = function () {
-  print ('there must be only one');
-}, scope = singleton); # and then try without scope!
+define ('counter', function () {
+  e <- new.env ();
+  e$count <- 0;
+  function () { e$count <- e$count + 1 }
+}, singleton);
 
-inject (c ('highlander', 'highlander', 'highlander'), callback = function (h1, h2, h3) {});
+define ('counter2', function () {
+  e <- new.env ();
+  e$count <- 0;
+  function () { e$count <- e$count + 1 }
+});
+
+inject (function (counter, counter2) {
+  print (counter ());
+  print (counter2 ());
+});
+
+inject (function (counter, counter2) {
+  print (counter ());
+  print (counter2 ());
+});
+```
+
+You can combine request and injector
+
+```
+request ('http://cran.at.r-project.org/src/contrib/Archive/agrmt/agrmt_1.31.tar.gz',
+         function (packages) {
+  shim ('agrmt', packages = packages);
+
+  inject (function (modes) { modes (c (.111, .22, .333, .4, .5555)) }
+});
 ```
 
 Extensible!
 
 ```
+# Provide your own environment
 env <- list ();
 
-define ('custom', c ('foo', 'bar'), callback = function (foo = 2, bar = 'bar') {
+define ('foo', function (bar = 'bar') {
   # ...
-}, scope = function (key, provider, environment) {
-  # ...
+}, scope = function (provider) {
+  # The scope is called at definition time and is injected with the
+  # provider function; provider function takes no arguments and is
+  # responsible for provisioning the dependency, the scope function
+  # is responsible for appropriately calling it and caching result
+  # when necessary
 }, env);
 ```
