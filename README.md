@@ -11,18 +11,22 @@ source.https <- function (url) {
   tryCatch ({ download.file (url, 'source', method = 'curl'); source ('source'); }, finally = { unlink ('source'); });
 };
 
-source.https ('https://raw.githubusercontent.com/dfci-cccb/injectoR/770449429450cf5075edd17618aed3635e6f048b/R/injector.R');
-source.https ('https://raw.githubusercontent.com/dfci-cccb/injectoR/770449429450cf5075edd17618aed3635e6f048b/R/request.R');
+source.https ('https://raw.githubusercontent.com/dfci-cccb/injectoR/3d3a729b0887303b77e19bbafc2c9e5e63767bf8/R/injector.R');
+source.https ('https://raw.githubusercontent.com/dfci-cccb/injectoR/3d3a729b0887303b77e19bbafc2c9e5e63767bf8/R/bootstrap.R');
 ```
 ========
 
-Requester will download and install your dependencies providing a list of library locations
+Get reproducible results with bootstrap(), a self documenting tool for installing dependencies
 
 ```
-request ('http://cran.at.r-project.org/src/contrib/Archive/agrmt/agrmt_1.31.tar.gz',
-         callback = function (lib.loc) {
+bootstrap ('http://cran.at.r-project.org/src/contrib/Archive/agrmt/agrmt_1.31.tar.gz',
+           callback = function (lib.loc) {
   library ('agrmt', lib.loc = lib.loc);
 });
+
+lib.loc = bootstrap ('http://cran.at.r-project.org/src/contrib/Archive/agrmt/agrmt_1.31.tar.gz');
+
+library ('agrmt', lib.loc = lib.loc);
 ```
 
 Injector is meant to make development and faster making it clear what parts of your script
