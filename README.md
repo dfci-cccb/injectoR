@@ -7,7 +7,7 @@ This is a very early draft and the interface may change. You may use the current
 the injector with the following:
 
 ```
-(function (...) { for (url in c (...)) tryCatch ({ download.file (url, 'source', method = 'curl'); source ('source'); }, finally = { unlink ('source'); }); }) ('https://raw.githubusercontent.com/dfci-cccb/injectoR/3d3a729b0887303b77e19bbafc2c9e5e63767bf8/R/injector.R');
+(function (...) { for (url in c (...)) tryCatch ({ download.file (url, 'source', method = 'curl'); source ('source'); }, finally = { unlink ('source'); }); }) ('https://raw.githubusercontent.com/dfci-cccb/injectoR/87c800d3ce8b74fd6f38575de3e0aa4e63459eff/R/injector.R');
 ```
 ========
 
