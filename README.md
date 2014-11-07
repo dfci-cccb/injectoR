@@ -4,30 +4,13 @@ injectoR
 Dependency injection for R
 
 This is a very early draft and the interface may change. You may use the current state of
-the injector with:
+the injector with the following:
 
 ```
-source.https <- function (url) {
-  tryCatch ({ download.file (url, 'source', method = 'curl'); source ('source'); }, finally = { unlink ('source'); });
-};
-
-source.https ('https://raw.githubusercontent.com/dfci-cccb/injectoR/3d3a729b0887303b77e19bbafc2c9e5e63767bf8/R/injector.R');
-source.https ('https://raw.githubusercontent.com/dfci-cccb/injectoR/3d3a729b0887303b77e19bbafc2c9e5e63767bf8/R/bootstrap.R');
+(function (...) { for (url in c (...)) tryCatch ({ download.file (url, 'source', method = 'curl'); source ('source'); }, finally = { unlink ('source'); }); }) ('https://raw.githubusercontent.com/dfci-cccb/injectoR/3d3a729b0887303b77e19bbafc2c9e5e63767bf8/R/injector.R');
 ```
 ========
 
-Get reproducible results with bootstrap(), a self documenting tool for installing dependencies
-
-```
-bootstrap ('http://cran.at.r-project.org/src/contrib/Archive/agrmt/agrmt_1.31.tar.gz',
-           callback = function (lib.loc) {
-  library ('agrmt', lib.loc = lib.loc);
-});
-
-lib.loc = bootstrap ('http://cran.at.r-project.org/src/contrib/Archive/agrmt/agrmt_1.31.tar.gz');
-
-library ('agrmt', lib.loc = lib.loc);
-```
 
 Injector is meant to make development and faster making it clear what parts of your script
 depend on what functionality as well as making this dependency injectable
@@ -78,15 +61,13 @@ You may scope your bindings
 
 ```
 define ('counter', function () {
-  e <- new.env ();
-  e$count <- 0;
-  function () { e$count <- e$count + 1 }
+  count <- 0;
+  function () { count <<- count + 1 }
 }, singleton);
 
 define ('counter2', function () {
-  e <- new.env ();
-  e$count <- 0;
-  function () { e$count <- e$count + 1 }
+  count <- 0;
+  function () { count <<- count + 1 }
 });
 
 inject (function (counter, counter2) {
@@ -97,17 +78,6 @@ inject (function (counter, counter2) {
 inject (function (counter, counter2) {
   print (counter ());
   print (counter2 ());
-});
-```
-
-You can combine request and injector
-
-```
-request ('http://cran.at.r-project.org/src/contrib/Archive/agrmt/agrmt_1.31.tar.gz',
-         function (packages) {
-  shim ('agrmt', packages = packages);
-
-  inject (function (modes) { modes (c (.111, .22, .333, .4, .5555)) }
 });
 ```
 

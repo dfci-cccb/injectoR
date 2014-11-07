@@ -12,8 +12,8 @@
 
   # Singleton scope, singleton bindings are provisioned once and cached 
   singleton <<- function (provider) {
-    value <- provider ();
-    function () { value };
+    value <- NULL;
+    function () { if (is.null (value)) value <<- provider () else value };
   };
 
   # Defines a binding formed of key, factory and scope
@@ -25,7 +25,7 @@
   shim <<- function (package, prefix = '', root = NULL, environment = .environment) {
     space <- loadNamespace (package, lib.loc = root);
     for (export in getNamespaceExports (space))
-      define (paste (prefix, export, sep = ''), function () { getExportedValue (space, export) }, singleton);
+      define (paste (prefix, export, sep = ''), function () { getExportedValue (space, export) }, singleton, environment);
   };
 
   # Launches the injected callback
