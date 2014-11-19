@@ -7,7 +7,7 @@ This is a very early draft and the interface may change. You may use the current
 the injector with the following:
 
 ```
-(function (...) { for (url in c (...)) tryCatch ({ download.file (url, 'source', method = 'curl'); source ('source'); }, finally = { unlink ('source'); }); }) ('https://raw.githubusercontent.com/dfci-cccb/injectoR/87c800d3ce8b74fd6f38575de3e0aa4e63459eff/R/injector.R');
+(function (...) { for (url in c (...)) tryCatch ({ download.file (url, 'source', method = 'curl'); source ('source'); }, finally = unlink ('source')); }) ('https://raw.githubusercontent.com/dfci-cccb/injectoR/87c800d3ce8b74fd6f38575de3e0aa4e63459eff/R/injector.R');
 ```
 ========
 
@@ -27,13 +27,11 @@ inject (function (factorial) {
 });
 ```
 
-You may shim legacy libraries; shimming libraries requires an install from source and allows
-installation (but not attachment) of different versions of the same library. Shimming a library
-will define all its globally exported variables.
-
-Shimming is meant as a crutch which at least makes it clear from the listing of a script which
-version of a library it is supposed to run - if not outright work years after it was written.
-Ideally ofcourse people would use the module definition system laid out here for writing scripts
+Shimming a library will define each of its globally exported variables. Shimming does not call
+library() so it will not export variables in the global namespace. Shimming and injecting is
+better than calling library() because it defines clear boundaries of dependency, and while an
+original result may depend on a library a derived will not have this explicit dependency 
+allowing you to switch the original implementations at will
 
 ```
 shim ('agrmt');
@@ -46,13 +44,11 @@ inject (function (modes) {
 You may optionally inject or provide a default value
 
 ```
-define ('greeting', function (name = "stranger") {
-  print (paste ("Greetings,", name));
-});
+define ('greeting', function (name = "stranger") print (paste ("Greetings,", name)));
 
 inject (function (greeting) {});
 
-define ('name', callback = function () { 'Bob' });
+define ('name', function () 'Bob');
 
 inject (function (greeting) {});
 ```
@@ -84,10 +80,10 @@ inject (function (counter, counter2) {
 Extensible!
 
 ```
-# Provide your own environment
-env <- list ();
+# Provide your own binding environment
+binder <- list ();
 
-define ('foo', function (bar = 'bar') {
+define ('foo', factory = function (bar = 'bar') {
   # ...
 }, scope = function (provider) {
   # The scope is called at definition time and is injected with the
@@ -95,5 +91,5 @@ define ('foo', function (bar = 'bar') {
   # responsible for provisioning the dependency, the scope function
   # is responsible for appropriately calling it and caching result
   # when necessary
-}, env);
+}, binder = binder);
 ```
