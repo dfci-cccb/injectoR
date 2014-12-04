@@ -7,7 +7,7 @@ This is a very early draft and the interface may change. You may use the current
 the injector with the following:
 
 ```
-(function (...) { for (url in c (...)) tryCatch ({ download.file (url, 'source', method = 'curl'); source ('source'); }, finally = unlink ('source')); }) ('https://raw.githubusercontent.com/dfci-cccb/injectoR/3e36f213b5e3df50d27e00289b3162acfa272707/R/injector.R');
+(function (...) { for (url in c (...)) tryCatch ({ download.file (url, 'source', method = 'curl'); source ('source'); }, finally = unlink ('source')); }) ('https://raw.githubusercontent.com/dfci-cccb/injectoR/master/R/injector.R');
 ```
 ========
 
@@ -16,15 +16,23 @@ Injector is meant to make development and faster making it clear what parts of y
 depend on what functionality as well as making this dependency injectable
 
 ```
-define ('factorial', function () {
-  factorial <- function (n) {
-    if (n < 1) 1 else n * factorial (n - 1);
-  };
-});
+define ('factorial', function ()
+  factorial <- function (n)
+    if (n < 1) 1 else n * factorial (n - 1));
 
-inject (function (factorial) {
-  factorial (3);
-});
+inject (function (factorial)
+  factorial (3));
+```
+
+You may define collections to accumulate bindings and have the collection injected as a list
+
+```
+add.food <- collection ('food')
+
+add.food (function () 'pizza');
+add.food (function () 'ice cream');
+
+inject (function (food) for (item in food) print (paste (item, "is bad for you")));
 ```
 
 Shimming a library will define each of its globally exported variables. Shimming does not call
@@ -37,7 +45,7 @@ allowing you to switch the original implementations at will
 shim ('agrmt');
 
 inject (function (modes) {
-  # do stuff modes()
+  # do stuff with modes()
 });
 ```
 
@@ -58,12 +66,12 @@ You may scope your bindings
 ```
 define ('counter', function () {
   count <- 0;
-  function () { count <<- count + 1 }
+  function () count <<- count + 1;
 }, singleton);
 
 define ('counter2', function () {
   count <- 0;
-  function () { count <<- count + 1 }
+  function () count <<- count + 1;
 });
 
 inject (function (counter, counter2) {
@@ -81,7 +89,7 @@ Extensible!
 
 ```
 # Provide your own binding environment
-binder <- list ();
+binder <- binder ();
 
 define ('foo', factory = function (bar = 'bar') {
   # ...
@@ -90,6 +98,6 @@ define ('foo', factory = function (bar = 'bar') {
   # provider function; provider function takes no arguments and is
   # responsible for provisioning the dependency, the scope function
   # is responsible for appropriately calling it and caching result
-  # when necessary
+  # when necessary. Provider is the wrapped factory injection call
 }, binder = binder);
 ```
