@@ -1,13 +1,13 @@
 Package: injectoR
-Version: 0.0.1-SNAPSHOT
+Version: 0.0.5.9000
 Date: 2014-10-30
 Title: R Dependency Injection
 Authors@R: c(person("Lev Kuznetsov", "Developer", role = c("aut", "cre")))
 Author: Lev Kuznetsov
 Maintainer: Lev Kuznetsov <levk@jimmy.harvard.edu>
-Depends: R (>= 1.8.0)
+Imports: base
 Suggests: 
-Description: Dependency injection framework
+Description: R dependency injection framework
 License: LGPL (>= 3)
 URL: https://github.com/dfci-cccb/injectoR
 BugReports: https://github.com/dfci-cccb/injectoR/issues
