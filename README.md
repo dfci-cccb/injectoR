@@ -3,19 +3,17 @@ injectoR
 
 Dependency injection for R
 
-This is a very early draft and the interface may change. You may use the current state of
-the injector with the following:
+This is a very early draft and the interface may change. You may install the project directly
+from github via devtools::install_packages ('dfci-cccb/injectoR'), you may reference the exact
+commit revision to freeze your version
 
-```
-(function (...) { for (url in c (...)) tryCatch ({ download.file (url, 'source', method = 'curl'); source ('source'); }, finally = unlink ('source')); }) ('https://raw.githubusercontent.com/dfci-cccb/injectoR/master/R/injector.R');
-```
 ========
 
 
 Injector is meant to make development and faster making it clear what parts of your script
 depend on what functionality as well as making this dependency injectable
 
-```
+```R
 define ('factorial', function ()
   factorial <- function (n)
     if (n < 1) 1 else n * factorial (n - 1));
@@ -26,7 +24,7 @@ inject (function (factorial)
 
 You may define collections to accumulate bindings and have the collection injected as a list
 
-```
+```R
 add.food <- collection ('food')
 
 add.food (function () 'pizza');
@@ -41,7 +39,7 @@ better than calling library() because it defines clear boundaries of dependency,
 original result may depend on a library a derived will not have this explicit dependency 
 allowing you to switch the original implementations at will
 
-```
+```R
 shim ('agrmt');
 
 inject (function (modes) {
@@ -51,7 +49,7 @@ inject (function (modes) {
 
 You may optionally inject or provide a default value
 
-```
+```R
 define ('greeting', function (name = "stranger") print (paste ("Greetings,", name)));
 
 inject (function (greeting) {});
@@ -63,7 +61,7 @@ inject (function (greeting) {});
 
 You may scope your bindings
 
-```
+```R
 define ('counter', function () {
   count <- 0;
   function () count <<- count + 1;
@@ -87,7 +85,7 @@ inject (function (counter, counter2) {
 
 Extensible!
 
-```
+```R
 # Provide your own binding environment
 binder <- binder ();
 

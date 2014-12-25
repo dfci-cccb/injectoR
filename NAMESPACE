@@ -1,2 +1,1 @@
 export (binder, define, singleton, default, collection, shim, inject)
-import (base)
