@@ -25,7 +25,7 @@
 # newly created binder and returns the result of the callback, if no callback is provided
 # then returns the binder 
 binder <- function (parent = .binder, callback = function (binder) binder)
-  callback (new.env (parent));
+  callback (new.env (parent = parent));
 
 # Scopes
 
