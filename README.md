@@ -4,7 +4,7 @@ injectoR
 Dependency injection for R
 
 This is a very early draft and the interface may change. You may install the project directly
-from github via devtools::install_packages ('dfci-cccb/injectoR'), you may reference the exact
+from github via devtools::install_github ('dfci-cccb/injectoR'), you may reference the exact
 commit revision to freeze your version
 
 ========
@@ -91,7 +91,7 @@ binder <- binder ();
 
 define ('foo', factory = function (bar = 'bar') {
   # ...
-}, scope = function (provider) {
+}, scope = function (key, provider) {
   # The scope is called at definition time and is injected with the
   # provider function; provider function takes no arguments and is
   # responsible for provisioning the dependency, the scope function
