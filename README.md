@@ -4,8 +4,7 @@ injectoR
 Dependency injection for R
 
 This is a very early draft and the interface may change. You may install the project directly
-from github via devtools::install_github ('dfci-cccb/injectoR'), you may and should reference
-the exact commit revision to freeze your version
+from github via ```devtools::install_github ('dfci-cccb/injectoR', ref = '0.0.7')```
 
 ========
 
