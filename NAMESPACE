@@ -1,1 +1,1 @@
-export (binder, define, singleton, default, collection, shim, inject)
+export (binder, define, singleton, multibind, shim, inject)

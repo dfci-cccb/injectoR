@@ -12,77 +12,125 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA
 
-# Dependency injection framework for R
+# Dependency injection framework
 # 
-# Author: levk
+# author: levk
 
-# Binder
+#' Root binder
+.binder <- new.env (parent = emptyenv ());
 
-# Global binder
-.binder <- new.env (emptyenv ());
-
-# Creates binders. Optionally accepts a callback function which will be called with the
-# newly created binder and returns the result of the callback, if no callback is provided
-# then returns the binder 
+#' Binder factory
+#' 
+#' @param parent of the new binder, injection will propagate up the 
+#' parent stack looking for keys; if omitted defaults to root binder
+#' @param callback called with the newly created binder and the
+#' result is returned; if omitted just the new binder is returned
+#' @return result of the injected callback if one is specified,
+#' otherwise the new binder
 binder <- function (parent = .binder, callback = function (binder) binder)
   callback (new.env (parent = parent));
 
-# Scopes
+#' Singleton scope, bindings of this scope are provided once, on
+#' initial demand
+singleton <- function (key, provider) (
+  function (value) function () if (is.null (value)) value <<- provider () else value) (NULL);
 
-# The default scope, bindings of this scope are provisioned each time they are injected
-default <- function (key, provider) provider;
-
-# Singleton scope, singleton bindings are provisioned once and cached 
-singleton <- function (key, provider) {
-  value <- NULL;
-  function () if (is.null (value)) value <<- provider () else value;
-};
-
-# Definition API
-
-# Defines a binding within the binder specified formed of key, factory and scope
-define <- function (key, factory, scope = default, binder = .binder)
+#' Creates a key to factory binding
+#' 
+#' @param key injectable bean identifier, this name is matched to a
+#' parameter name during injection
+#' @param factory responsible for provisioning of the bean, a factory
+#' may accept any number of arguments in which case the framework will
+#' attempt to inject the argument if a binding to the parameter name
+#' exists; if it does not, that argument will not be injected, in
+#' which case it is the factory's responsibility to deal with a
+#' missing argument
+#' @param scope of the bean, wraps the injected factory call
+#' specifying provisioning strategy, if omitted a new bean instance
+#' will be provisioned each time injection is requested; injectoR also
+#' ships with with the singleton scope which will provide once and
+#' cache the bean for subsequent calls. Interface allows for custom
+#' scoping, the scope parameter must bu a function accepting key (name)
+#' and the provider - the wrapped injected factory call - a function
+#' accepting no parameters responsible for actual provisioning
+#' @param binder for this binding, if omitted the new binding is added
+#' to the root binder
+#' @return calls are made for side effect of defining the binding
+define <- function (key, factory, scope = function (key, provider) provider, binder = .binder)
   binder[[ key ]] <- scope (key, function () inject (factory, binder));
 
-# Defines an accumulative binding injectable as a list, returns the attachment function
-# which accepts an injectable factory function to append to the binding, optionally
-# accepts a combine parameter, default combine behavior is to merge with the parent
-# binder
-collection <- function (key, scope = default, combine = function (this, parent) c (this, parent ()), binder = .binder) {
-  factories <- NULL;
-  define (key, function () {
-    collection <- list ();
-    for (factory in factories) collection [[ length (collection) + 1 ]] <- inject (factory, binder);
-    parent <- parent.env (binder);
-    combine (collection, function () if (exists (key, e = parent)) get (key, e = parent) () else list ());
-  }, scope, binder);
-  function (factory) factories <<- c (factories, factory);
-};
+#' Aggregates multiple factories under one key
+#' 
+#' @param key injectable bean identifier
+#' @param scope of the bean, wraps the injected factory call
+#' specifying provisioning strategy, if omitted a new bean instance
+#' will be provisioned each time injection is requested; injectoR also
+#' ships with with the singleton scope which will provide once and
+#' cache the bean for subsequent calls. Interface allows for custom
+#' scoping, the scope parameter must be a function accepting key (name)
+#' and the provider - the wrapped injected factory call - a function
+#' accepting no parameters responsible for actual provisioning
+#' @param combine aggregation procedure for combination of context
+#' and inherited values, a function accepting a list of injectable
+#' values from the current binder context and a no argument function
+#' to retrieve values of the parent context; if omitted will the binding
+#' will aggregate all values
+#' @param binder for this binding, if omitted the binding is added to
+#' the root binder
+#' @return a function accepting one or more factories for adding
+#' elements to the binding; naming the factories will result in named
+#' values injected
+multibind <- function (key, scope = function (key, provider) provider,
+                       combine = function (this, parent) c (this, parent ()), binder = .binder) 
+  if (exists (key, e = binder, inherits = FALSE)) attr (binder[[ key ]], 'add') else {
+    factories <- list ();
+    binder[[ key ]] <- scope (key, function () {
+                                     parent = parent.env (binder);
+                                     combine (lapply (factories, function (factory) inject (factory, binder)),
+                                              function () if (exists (key, e = parent)) get (key, e = parent) ()
+                                                          else list ())
+                                   });
+    attr (binder[[ key ]], 'add') <- function (...) factories <<- c (factories, list (...));
+  };
 
-# Shims legacy packages by defining all exported variables, optionally takes a callback
-# in which case the result of the injected callback is returned, otherwise the injected
-# binder is returned
-shim <- function (..., binder = .binder, callback) {
-  for (name in c (...))
-    if (suppressPackageStartupMessages (requireNamespace (name)))
-      (function (space)
-        for (export in getNamespaceExports (space))
-          (function (export)
-            define (export, function () getExportedValue (space, export), singleton, binder)) (export)) (loadNamespace (name));
-  if (missing (callback)) binder else inject (callback, binder);
-};
+#' Shims legacy libraries
+#' 
+#' @param ... zero or more library names to shim binding each exported
+#' variable to the binder; if a library name is specified in a named
+#' list format (for example shim(s4='stats4',callback=function(s4.AIC)))
+#' all exported variable names from that library will be prepended with
+#' that name and a dot (as in the example); if a library cannot be
+#' loaded, no bindings are created and no errors are thrown
+#' @param library.paths to use for loading namespace
+#' @param callback injected for convenience using the binder specified
+#' after shim is completed, if omitted the call returns the binder
+#' @param binder for this shim
+#' @return result of the callback if specified, binder otherwise
+shim <- function (..., library.paths = .libPaths (), callback = function () binder, binder = .binder) (
+  function (packages) {
+    lapply (1:length (packages),
+            function (i)
+              if (requireNamespace (packages[[ i ]], lib.loc = library.paths)) (
+                function (namespace)
+                  lapply (getNamespaceExports (namespace),
+                          function (export, value = getExportedValue (namespace, export))
+                            define (if (is.null (names (packages)) || "" == names (packages)[ i ]) export
+                                    else paste (names (packages)[ i ], export, sep = '.'),
+                                    function () value, singleton, binder))) (loadNamespace (packages[[ i ]],
+                                                                             lib.loc = library.paths)));
+    inject (callback, binder);
+  }) (list (...));
 
-# Injection
-
-# Launches the injected callback
-inject <- function (callback, binder = .binder) {
-  arguments <- list ();
-  errors <- list ();
-
-  for (key in names (formals (callback)))
-    if (exists (key, e = binder))
-      tryCatch (arguments[[ key ]] <- get (key, e = binder) (),
-                error = function (chain) errors <<- c (errors, chain$message));
-
-  if (length (errors) == 0) do.call (callback, arguments) else stop (errors);
-};
+#' Injects the callback function
+#' 
+#' @param callback function to inject, a function accepting arguments
+#' to be matched to injectable keys
+#' @param binder containing the injectables
+#' @return result of the injected callback evaluation
+inject <- function (callback, binder = .binder)
+  do.call (callback,
+           Filter (function (x) !is.null (x),
+                   setNames (lapply (names (formals (callback)),
+                                     function (key)
+                                       if (exists (key, e = binder)) get (key, e = binder) ()),
+                             names (formals (callback)))));

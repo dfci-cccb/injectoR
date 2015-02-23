@@ -4,33 +4,35 @@ injectoR
 Dependency injection for R
 
 This is a very early draft and the interface may change. You may install the project directly
-from github via devtools::install_github ('dfci-cccb/injectoR'), you may reference the exact
-commit revision to freeze your version
+from github via devtools::install_github ('dfci-cccb/injectoR'), you may and should reference
+the exact commit revision to freeze your version
 
 ========
 
-
-Injector is meant to make development and faster making it clear what parts of your script
-depend on what functionality as well as making this dependency injectable
+Injector is meant to ease development making it clear what parts of your script depend on what
+other functionality without cluttering your interface
 
 ```R
-define ('factorial', function ()
-  factorial <- function (n)
-    if (n < 1) 1 else n * factorial (n - 1));
+define ('three', function () 3)
 
-inject (function (factorial)
-  factorial (3));
+define ('power', function () p <- function (x, n) if (n < 1) 1 else x * p (x, n - 1));
+
+define ('cube', function (power, three) function (x) power (x, three));
+
+inject (function (cube) cube (4));
 ```
 
-You may define collections to accumulate bindings and have the collection injected as a list
+Define collections to accumulate bindings and have the collection injected as a (optionally
+named) list
 
 ```R
-add.food <- collection ('food')
+add.food <- multibind ('food')
 
 add.food (function () 'pizza');
-add.food (function () 'ice cream');
+multibind ('food') (function () 'ice cream');
+add.food (pretzel = function () 'pretzel');
 
-inject (function (food) for (item in food) print (paste (item, "is bad for you")));
+inject (function (food) food);
 ```
 
 Shimming a library will define each of its globally exported variables. Shimming does not call
@@ -45,6 +47,10 @@ shim ('agrmt');
 inject (function (modes) {
   # do stuff with modes()
 });
+
+shim (s4 = 'stats4', callback = function (s4.AIC) {
+  # do stuff with stats4's AIC()
+})
 ```
 
 You may optionally inject or provide a default value
@@ -67,19 +73,12 @@ define ('counter', function () {
   function () count <<- count + 1;
 }, singleton);
 
-define ('counter2', function () {
-  count <- 0;
-  function () count <<- count + 1;
+inject (function (counter) {
+  print (counter ());
 });
 
-inject (function (counter, counter2) {
+inject (function (counter) {
   print (counter ());
-  print (counter2 ());
-});
-
-inject (function (counter, counter2) {
-  print (counter ());
-  print (counter2 ());
 });
 ```
 
@@ -90,7 +89,7 @@ Extensible!
 binder <- binder ();
 
 define ('foo', factory = function (bar = 'bar') {
-  # ...
+  # Factory for foo
 }, scope = function (key, provider) {
   # The scope is called at definition time and is injected with the
   # provider function; provider function takes no arguments and is
