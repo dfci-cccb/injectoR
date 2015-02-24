@@ -1,10 +1,11 @@
+[![Coverage Status](https://coveralls.io/repos/dfci-cccb/injectoR/badge.svg?branch=master)](https://coveralls.io/r/dfci-cccb/injectoR?branch=master)[![Build Status](https://travis-ci.org/dfci-cccb/injectoR.svg?branch=master)](https://travis-ci.org/dfci-cccb/injectoR)
+
 injectoR
 ========
 
 Dependency injection for R
 
-This is a very early draft and the interface may change. You may install the project directly
-from github via ```devtools::install_github ('dfci-cccb/injectoR', ref = '0.0.7')```
+You can install the project directly via github with ```devtools::install_github ('dfci-cccb/injectoR', ref = '0.1.0')```
 
 ========
 

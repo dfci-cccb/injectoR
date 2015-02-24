@@ -4,8 +4,7 @@
 \alias{define}
 \title{Creates a key to factory binding}
 \usage{
-define(key, factory, scope = function(key, provider) provider,
-  binder = .binder)
+define(key, factory, scope = default, binder = .binder)
 }
 \arguments{
 \item{key}{injectable bean identifier, this name is matched to a
@@ -23,7 +22,7 @@ specifying provisioning strategy, if omitted a new bean instance
 will be provisioned each time injection is requested; injectoR also
 ships with with the singleton scope which will provide once and
 cache the bean for subsequent calls. Interface allows for custom
-scoping, the scope parameter must bu a function accepting key (name)
+scoping, the scope parameter must be a function accepting key (name)
 and the provider - the wrapped injected factory call - a function
 accepting no parameters responsible for actual provisioning}
 

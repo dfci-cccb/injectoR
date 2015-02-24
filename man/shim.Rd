@@ -2,7 +2,7 @@
 % Please edit documentation in R/injectoR.R
 \name{shim}
 \alias{shim}
-\title{Shims legacy libraries}
+\title{Shims libraries}
 \usage{
 shim(..., library.paths = .libPaths(), callback = function() binder,
   binder = .binder)
@@ -26,6 +26,6 @@ after shim is completed, if omitted the call returns the binder}
 result of the callback if specified, binder otherwise
 }
 \description{
-Shims legacy libraries
+Shims libraries
 }
 

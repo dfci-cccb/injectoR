@@ -8,9 +8,13 @@ inject(callback, binder = .binder)
 }
 \arguments{
 \item{callback}{function to inject, a function accepting arguments
-to be matched to injectable keys}
+to be matched to injectable keys; no errors are thrown if no binding
+is found for a key, this is the intended mechanic for optional
+injection, if the callback is able to deal with a missing argument
+the argument becomes optional}
 
-\item{binder}{containing the injectables}
+\item{binder}{containing the injectables, defaults to rrot binder if
+omitted}
 }
 \value{
 result of the injected callback evaluation

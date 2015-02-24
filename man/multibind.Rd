@@ -4,8 +4,8 @@
 \alias{multibind}
 \title{Aggregates multiple factories under one key}
 \usage{
-multibind(key, scope = function(key, provider) provider,
-  combine = function(this, parent) c(this, parent()), binder = .binder)
+multibind(key, scope = default, combine = function(this, parent) c(this,
+  parent()), binder = .binder)
 }
 \arguments{
 \item{key}{injectable bean identifier}
@@ -29,8 +29,11 @@ will aggregate all values}
 the root binder}
 }
 \value{
-a function accepting a factory and optionally a name arguments
-for adding elements to the binding
+a function accepting one or more factories for adding
+elements to the binding; naming the factories will result in named
+values injected; optionally accepts a scope for the bindings, if
+omitted defaults to provide on injection; please be aware that the
+scope is called without key for unnamed multibinding
 }
 \description{
 Aggregates multiple factories under one key

@@ -4,13 +4,13 @@
 \alias{binder}
 \title{Binder factory}
 \usage{
-binder(parent = .binder, inject = function(binder) binder)
+binder(parent = .binder, callback = function(binder) binder)
 }
 \arguments{
 \item{parent}{of the new binder, injection will propagate up the
 parent stack looking for keys; if omitted defaults to root binder}
 
-\item{inject}{called with the newly created binder and the
+\item{callback}{called with the newly created binder and the
 result is returned; if omitted just the new binder is returned}
 }
 \value{
