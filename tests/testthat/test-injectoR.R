@@ -34,8 +34,50 @@ describe ("Singleton scope", {
                                 expect_false (called); called <<- TRUE;
                                 function () c <<- c + 1;
                               });
+    injected <- scoped ();
+    expect_equal (injected (), 1);
+    expect_equal (injected (), 2);
+    expect_equal (scoped () (), 3);
+  });
+});
+
+describe ("Default scope", {
+  it ("Should be a function accepting key and provider", {
+    expect_true (is.function (default));
+    expect_equal (names (formals (default)), c ('key', 'provider'));
+  });
+
+  it ("Should provide on each injection", {
+    called <- 0;
+    scoped <- default ('c', function (c = 0) {
+      called <<- called + 1;
+      function () c <<- c + 1;
+    });
+    injected <- scoped ();
+    expect_equal (injected (), 1);
+    expect_equal (injected (), 2);
     expect_equal (scoped () (), 1);
-    expect_equal (scoped () (), 2);
+    expect_equal (called, 2);
+  });
+});
+
+describe ("Proxy scope", {
+  it ("Should be a function accepting key and provider", {
+    expect_true (is.function (default));
+    expect_equal (names (formals (default)), c ('key', 'provider'));
+  });
+
+  it ("Should provide on each use", {
+    called <- 0;
+    scoped <- proxy ('c', function (c = 0) {
+      called <<- called + 1;
+      function () c <<- c + 1;
+    });
+    injected <- scoped ();
+    expect_equal (injected (), 1);
+    expect_equal (injected (), 1);
+    expect_equal (scoped () (), 1);
+    expect_equal (called, 3);
   });
 });
 

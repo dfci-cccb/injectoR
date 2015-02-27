@@ -1,11 +1,10 @@
 Package: injectoR
-Version: 0.1.0
+Version: 0.1.0.9000
 Date: 2014-10-30
 Title: R Dependency Injection
 Authors@R: c(person("Lev Kuznetsov", "Developer", role = c("aut", "cre")))
 Author: Lev Kuznetsov
 Maintainer: Lev Kuznetsov <levk@jimmy.harvard.edu>
-Imports: base
 Suggests: testthat
 Description: R dependency injection framework
 License: LGPL (>= 3)

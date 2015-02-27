@@ -29,9 +29,6 @@ accepting no parameters responsible for actual provisioning}
 \item{binder}{for this binding, if omitted the new binding is added
 to the root binder}
 }
-\value{
-calls are made for side effect of defining the binding
-}
 \description{
 Creates a key to factory binding
 }

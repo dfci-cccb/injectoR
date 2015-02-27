@@ -52,6 +52,15 @@ singleton <- function (key, provider)
 #' for provision
 default <- function (key, provider) provider;
 
+#' Proxy scope applicable for function type beans only, provisioned
+#' once for each use allowing for circular dependencies
+#' 
+#' @param key of the binding
+#' @param provider unscoped delegate, no argument function responsible
+#' for provision
+#' @export
+proxy <- function (key, provider) function () function (...) do.call (provider (), list (...));
+
 #' Creates a key to factory binding
 #' 
 #' @param key injectable bean identifier, this name is matched to a
@@ -72,7 +81,6 @@ default <- function (key, provider) provider;
 #' accepting no parameters responsible for actual provisioning
 #' @param binder for this binding, if omitted the new binding is added
 #' to the root binder
-#' @return calls are made for side effect of defining the binding
 #' @export
 define <- function (key, factory, scope = default, binder = .binder)
   binder[[ key ]] <- scope (key, function () inject (factory, binder));
