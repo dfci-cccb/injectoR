@@ -61,26 +61,6 @@ describe ("Default scope", {
   });
 });
 
-describe ("Proxy scope", {
-  it ("Should be a function accepting key and provider", {
-    expect_true (is.function (default));
-    expect_equal (names (formals (default)), c ('key', 'provider'));
-  });
-
-  it ("Should provide on each use", {
-    called <- 0;
-    scoped <- proxy ('c', function (c = 0) {
-      called <<- called + 1;
-      function () c <<- c + 1;
-    });
-    injected <- scoped ();
-    expect_equal (injected (), 1);
-    expect_equal (injected (), 1);
-    expect_equal (scoped () (), 1);
-    expect_equal (called, 3);
-  });
-});
-
 describe ("Binding definition", {
   it ("Should be a function accepting key, factory, scope, and binder", {
     expect_true (is.function (define));
@@ -191,5 +171,11 @@ describe ("Injection", {
     multibind ('foo', b = b) (s = c, scope = singleton);
     expect_equal (inject (function (foo) list (p = foo$p (), s = foo$s ()), b), list (p = 1, s = 1));
     expect_equal (inject (function (foo) list (p = foo$p (), s = foo$s ()), b), list (p = 1, s = 2));
+  });
+
+  it ("Should allow circular dependencies scope", {
+    b <- binder ();
+    define ('f', function (f) function (x) if (x < 1) 1 else x * f (x - 1), b = b);
+    expect_equal (inject (function (f) f (6), b), 720);
   });
 });

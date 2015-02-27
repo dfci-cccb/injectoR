@@ -52,15 +52,6 @@ singleton <- function (key, provider)
 #' for provision
 default <- function (key, provider) provider;
 
-#' Proxy scope applicable for function type beans only, provisioned
-#' once for each use allowing for circular dependencies
-#' 
-#' @param key of the binding
-#' @param provider unscoped delegate, no argument function responsible
-#' for provision
-#' @export
-proxy <- function (key, provider) function () function (...) do.call (provider (), list (...));
-
 #' Creates a key to factory binding
 #' 
 #' @param key injectable bean identifier, this name is matched to a
@@ -170,14 +161,20 @@ shim <- function (..., library.paths = .libPaths (), callback = function () bind
 #' is found for a key, this is the intended mechanic for optional
 #' injection, if the callback is able to deal with a missing argument
 #' the argument becomes optional
-#' @param binder containing the injectables, defaults to rrot binder if
+#' @param binder containing the injectables, defaults to root binder if
 #' omitted
 #' @return result of the injected callback evaluation
 #' @export
-inject <- function (callback, binder = .binder)
-  do.call (callback,
-           Filter (function (x) !is.null (x),
-                   setNames (lapply (names (formals (callback)),
-                                     function (key)
-                                       if (exists (key, envir = binder)) get (key, envir = binder) ()),
-                             names (formals (callback)))));
+inject <- function (callback, binder = .binder) {
+  args <- new.env (parent = environment (callback));
+  lapply (names (formals (callback)),
+          function (key)
+            if (exists (key, envir = binder))
+              makeActiveBinding (key,
+                                 (function (value)
+                                    function (x)
+                                      if (!missing (x)) value <<- x
+                                      else if (is.null (value)) value <<- get (key, envir = binder) ()
+                                      else value) (NULL), args));
+  eval (body (callback), args);
+}

@@ -13,7 +13,7 @@ is found for a key, this is the intended mechanic for optional
 injection, if the callback is able to deal with a missing argument
 the argument becomes optional}
 
-\item{binder}{containing the injectables, defaults to rrot binder if
+\item{binder}{containing the injectables, defaults to root binder if
 omitted}
 }
 \value{
