@@ -5,7 +5,7 @@ injectoR
 
 Dependency injection for R
 
-You can install the project directly via github with ```devtools::install_github ('dfci-cccb/injectoR', ref = '0.1.0')```
+You can install the project directly via github with ```devtools::install_github ('dfci-cccb/injectoR')```
 
 ========
 
@@ -15,7 +15,7 @@ other functionality without cluttering your interface
 ```R
 define ('three', function () 3)
 
-define ('power', function () p <- function (x, n) if (n < 1) 1 else x * p (x, n - 1));
+define ('power', function (power) function (x, n) if (n < 1) 1 else x * power (x, n - 1));
 
 define ('cube', function (power, three) function (x) power (x, three));
 

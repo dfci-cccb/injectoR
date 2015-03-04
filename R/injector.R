@@ -167,14 +167,23 @@ shim <- function (..., library.paths = .libPaths (), callback = function () bind
 #' @export
 inject <- function (callback, binder = .binder) {
   args <- new.env (parent = environment (callback));
+  args$missing <- function (x) {
+    key <- as.character (match.call ()$x);
+    if (!identical (parent.frame (), args)) missing (x)
+    else if (!(key %in% names (formals (callback)))) stop ("'missing' can only be used for arguments")
+    else !exists (key, envir = binder);
+  };
   lapply (names (formals (callback)),
           function (key)
-            if (exists (key, envir = binder))
-              makeActiveBinding (key,
-                                 (function (value)
-                                    function (x)
-                                      if (!missing (x)) value <<- x
-                                      else if (is.null (value)) value <<- get (key, envir = binder) ()
-                                      else value) (NULL), args));
+            makeActiveBinding (key, (function (value)
+                                       function (x) 
+                                         if (!missing (x)) value <<- x
+                                         else if (is.null (value))
+                                           value <<- if (exists (key, envir = binder))
+                                                       get (key, envir = binder) ()
+                                                     else if (formals (callback)[[ key ]] != '')
+                                                       formals (callback)[[ key ]]
+                                                     else stop (paste ("Unbound dependency on", key))
+                                         else value) (NULL), args));
   eval (body (callback), args);
 }
