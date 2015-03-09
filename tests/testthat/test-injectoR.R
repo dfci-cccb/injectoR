@@ -23,17 +23,17 @@ describe ("Binder factory", {
 describe ("Singleton scope", {
   it ("Should be a function accepting key and provider", {
     expect_true (is.function (singleton));
-    expect_equal (names (formals (singleton)), c ('key', 'provider'));
+    expect_equal (names (formals (singleton)), 'provider');
   });
 
-  it ("Should provision", expect_equal (singleton ('foo', function () function () 'foo') () (), 'foo'));
+  it ("Should provision", expect_equal (singleton (function () function () 'foo') () (), 'foo'));
 
   it ("Should cache provision", {
     called <- FALSE;
-    scoped <- singleton ('c', function (c = 0) {
-                                expect_false (called); called <<- TRUE;
-                                function () c <<- c + 1;
-                              });
+    scoped <- singleton (function (c = 0) {
+                           expect_false (called); called <<- TRUE;
+                           function () c <<- c + 1;
+                         });
     injected <- scoped ();
     expect_equal (injected (), 1);
     expect_equal (injected (), 2);
@@ -44,12 +44,12 @@ describe ("Singleton scope", {
 describe ("Default scope", {
   it ("Should be a function accepting key and provider", {
     expect_true (is.function (default));
-    expect_equal (names (formals (default)), c ('key', 'provider'));
+    expect_equal (names (formals (default)), 'provider');
   });
 
   it ("Should provide on each injection", {
     called <- 0;
-    scoped <- default ('c', function (c = 0) {
+    scoped <- default (function (c = 0) {
       called <<- called + 1;
       function () c <<- c + 1;
     });
@@ -64,14 +64,21 @@ describe ("Default scope", {
 describe ("Binding definition", {
   it ("Should be a function accepting key, factory, scope, and binder", {
     expect_true (is.function (define));
-    expect_equal (names (formals (define)), c ('key', 'factory', 'scope', 'binder'));
+    expect_equal (names (formals (define)), c ('...', 'scope', 'binder'));
   });
 
   it ("Should define bindings", {
     b <- binder ();
-    define ('foo', function () 'foo', binder = b);
+    define (foo = function () 'foo', binder = b);
     expect_equal (ls (b), 'foo');
     expect_equal (b[[ 'foo' ]] (), 'foo');
+  });
+
+  it ("Should define multiple bindings", {
+    b <- binder ();
+    define (foo = function () 'foo', bar = function () 'bar', binder = b);
+    expect_equal (c ('foo', 'bar') %in% ls (b), c (TRUE, TRUE))
+    expect_equal (c (b$foo (), b$bar ()), c ('foo', 'bar'));
   });
 });
 
@@ -104,7 +111,7 @@ describe ("Multibinder definition", {
 });
 
 describe ("Shim binding", {
-  it ("Should be a function acepting ..., library.paths, callback, and binder", {
+  it ("Should be a function acepting ..., library.paths, callback", {
     expect_true (is.function (shim));
     expect_equal (names (formals (shim)), c ('...', 'library.paths', 'callback', 'binder'));
   });
@@ -125,6 +132,14 @@ describe ("Shim binding", {
       expect_equal (names (formals (i.inject)), c ('callback', 'binder'));
       TRUE;
     }, binder = binder ())));
+
+  it ("Shims should function",
+      expect_equal (shim ('injectoR',
+                          callback = function (define, inject, binder)
+                            inject (function (f) f (5),
+                              define (f = function (f) function (x) if (x < 1) 1 else x * f (x - 1),
+                                      binder = binder ())),
+                          binder = binder ()), 120));
 });
 
 describe ("Injection", {
@@ -137,16 +152,16 @@ describe ("Injection", {
 
   it ("Should inject defined indepentent beans into callback", {
     b <- binder ();
-    define ('foo', function () 'foo', b = b);
-    define ('bar', function () 'bar', b = b);
+    define (foo = function () 'foo', binder = b);
+    define (bar = function () 'bar', binder = b);
     expect_equal (inject (function (foo, bar) list (foo, bar), b), list ('foo', 'bar'));
   });
 
   it ("Should inject defined beans with transitive dependencies into callback", {
     b <- binder ();
-    define ('three', function () 3, b = b);
-    define ('power', function () p <- function (x, n) if (n < 1) 1 else x * p (x, n - 1), b = b);
-    define ('cube', function (three, power) function (x) power (x, three), b = b);
+    define (three = function () 3, binder = b);
+    define (power = function () p <- function (x, n) if (n < 1) 1 else x * p (x, n - 1), binder = b);
+    define (cube = function (three, power) function (x) power (x, three), binder = b);
     expect_equal (inject (function (cube) cube (2), b), 8);
   });
 
@@ -175,21 +190,21 @@ describe ("Injection", {
 
   it ("Should allow circular dependencies", {
     b <- binder ();
-    define ('f', function (f) function (x) if (x < 1) 1 else x * f (x - 1), b = b);
+    define (f = function (f) function (x) if (x < 1) 1 else x * f (x - 1), binder = b);
     expect_equal (inject (function (f) f (6), b), 720);
   });
 
   it ("Should allow optional dependencies", {
     b <- binder ();
-    define ('g', function (n = 'stranger', t) paste ('Hello', n), b = b);
+    define (g = function (n = 'stranger', t) paste ('Hello', n), binder = b);
     expect_equal (inject (function (g) g, b), 'Hello stranger');
-    define ('n', function () 'Bob', b = b);
+    define (n = function () 'Bob', binder = b);
     expect_equal (inject (function (g) g, b), 'Hello Bob');
   });
 
   it ("Should throw error on access unbound dependency", {
     b <- binder ();
-    define ('t', function (h) h, b = b);
+    define (t = function (h) h, b = b);
     tryCatch ({
       inject (function (t) t, b);
       fail ('Did not throw on access to missing variable');
@@ -200,7 +215,7 @@ describe ("Injection", {
 
   it ("Should not throw error on no access to unbound dependency", {
     b <- binder ();
-    define ('t', function (h) 3, b = b);
+    define (t = function (h) 3, binder = b);
     expect_equal (inject (function (t) t, b), 3);
   });
 
@@ -211,18 +226,18 @@ describe ("Injection", {
 
   it ("missing() should return false for bound dependencies", {
     b <- binder ();
-    define ('u', function () 4, b = b);
+    define (u = function () 4, binder = b);
     expect_false (inject (function (u) missing (u), b));
   });
 
   it ("missing() should revert back to original functionality in new environment", {
     b <- binder ();
-    define ('g', function () {
+    define (g = function () {
       t <- function (r) missing (r);
       expect_true (t ());
       expect_false (t (4));
       TRUE;
-    }, b = b);
+    }, binder = b);
     expect_true (inject (function (g) g, b));
   });
 });

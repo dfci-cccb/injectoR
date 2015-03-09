@@ -13,11 +13,9 @@ Injector is meant to ease development making it clear what parts of your script 
 other functionality without cluttering your interface
 
 ```R
-define ('three', function () 3)
-
-define ('power', function (power) function (x, n) if (n < 1) 1 else x * power (x, n - 1));
-
-define ('cube', function (power, three) function (x) power (x, three));
+define (three = function () 3)
+        power = function (power) function (x, n) if (n < 1) 1 else x * power (x, n - 1),
+        cube = function (power, three) function (x) power (x, three));
 
 inject (function (cube) cube (4));
 ```
@@ -59,7 +57,7 @@ shim (b = 'base', s = 'stats',
   # Define something useful into your root binder
   define ('exports', function () function (...) {
     packages = c (...);
-    lapply (s.setNames (packages, packages), function (package)
+    lapply (s.setNames (nm = packages), function (package)
       b.getNamespaceExports (b.loadNamespace (package)));
   });
 }, binder = binder ());
@@ -100,9 +98,9 @@ Extensible!
 # Provide your own binding environment
 binder <- binder ();
 
-define ('foo', factory = function (bar = 'bar') {
+define (foo = function (bar = 'bar') {
   # Factory for foo
-}, scope = function (key, provider) {
+}, scope = function (provider) {
   # The scope is called at definition time and is injected with the
   # provider function; provider function takes no arguments and is
   # responsible for provisioning the dependency, the scope function

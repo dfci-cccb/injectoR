@@ -4,14 +4,13 @@
 \alias{define}
 \title{Creates a key to factory binding}
 \usage{
-define(key, factory, scope = default, binder = .binder)
+define(..., scope = default, binder = .binder)
 }
 \arguments{
-\item{key}{injectable bean identifier, this name is matched to a
-parameter name during injection}
-
-\item{factory}{responsible for provisioning of the bean, a factory
-may accept any number of arguments in which case the framework will
+\item{...}{injectable bean identifier to factory mappings, the key
+is the name is matched to a parameter name during injection, the
+factory responsible for provisioning of the bean, a factory may
+accept any number of arguments in which case the framework will
 attempt to inject the argument if a binding to the parameter name
 exists; if it does not, that argument will not be injected, in
 which case it is the factory's responsibility to deal with a

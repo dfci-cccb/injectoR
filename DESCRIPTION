@@ -1,8 +1,8 @@
 Package: injectoR
-Version: 0.1.0.9003
+Version: 0.2.0
 Date: 2014-10-30
 Title: R Dependency Injection
-Authors@R: c(person("Lev Kuznetsov", "Developer", role = c("aut", "cre")))
+Authors@R: c(person("Lev Kuznetsov", "Developer", email = "levk@jimmy.harvard.edu", role = c("aut", "cre")))
 Author: Lev Kuznetsov
 Maintainer: Lev Kuznetsov <levk@jimmy.harvard.edu>
 Suggests: testthat
