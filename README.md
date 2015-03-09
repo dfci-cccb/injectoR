@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/dfci-cccb/injectoR.svg?branch=master)](https://travis-ci.org/dfci-cccb/injectoR) [![Build Status](https://ci.appveyor.com/api/projects/status/github/dfci-cccb/injectoR?svg=true)] [![Coverage Status](https://coveralls.io/repos/dfci-cccb/injectoR/badge.svg)](https://coveralls.io/r/dfci-cccb/injectoR)
+[![Build Status](https://travis-ci.org/dfci-cccb/injectoR.svg?branch=master)](https://travis-ci.org/dfci-cccb/injectoR) [![Build Status](https://ci.appveyor.com/api/projects/status/github/dfci-cccb/injectoR?svg=true)](https://ci.appveyor.com/project/lev-kuznetsov/injector-ad8op) [![Coverage Status](https://coveralls.io/repos/dfci-cccb/injectoR/badge.svg)](https://coveralls.io/r/dfci-cccb/injectoR)
 
 injectoR
 ========
@@ -55,7 +55,7 @@ shim (s4 = 'stats4', callback = function (s4.AIC) {
 shim (b = 'base', s = 'stats',
       callback = function (b.loadNamespace, b.getNamespaceExports, s.setNames) {
   # Define something useful into your root binder
-  define ('exports', function () function (...) {
+  define (exports = function () function (...) {
     packages = c (...);
     lapply (s.setNames (nm = packages), function (package)
       b.getNamespaceExports (b.loadNamespace (package)));
