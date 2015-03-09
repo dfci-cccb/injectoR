@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/dfci-cccb/injectoR.svg?branch=master)](https://travis-ci.org/dfci-cccb/injectoR) [![Coverage Status](https://coveralls.io/repos/dfci-cccb/injectoR/badge.svg)](https://coveralls.io/r/dfci-cccb/injectoR)
+[![Build Status](https://travis-ci.org/dfci-cccb/injectoR.svg?branch=master)](https://travis-ci.org/dfci-cccb/injectoR) [![Build Status](https://ci.appveyor.com/api/projects/status/github/dfci-cccb/injectoR?svg=true)] [![Coverage Status](https://coveralls.io/repos/dfci-cccb/injectoR/badge.svg)](https://coveralls.io/r/dfci-cccb/injectoR)
 
 injectoR
 ========
@@ -66,11 +66,11 @@ shim (b = 'base', s = 'stats',
 You may optionally inject or provide a default value
 
 ```R
-define ('greeting', function (name = "stranger") print (paste ("Greetings,", name)));
+define (greeting = function (name = "stranger") print (paste ("Greetings,", name)));
 
 inject (function (greeting) {});
 
-define ('name', function () 'Bob');
+define (name = function () 'Bob');
 
 inject (function (greeting) {});
 ```
@@ -78,7 +78,7 @@ inject (function (greeting) {});
 You may scope your bindings
 
 ```R
-define ('counter', function () {
+define (counter = function () {
   count <- 0;
   function () count <<- count + 1;
 }, singleton);

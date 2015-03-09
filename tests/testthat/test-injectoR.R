@@ -240,4 +240,9 @@ describe ("Injection", {
     }, binder = b);
     expect_true (inject (function (g) g, b));
   });
+
+  it ("Should preserve injected function environment", {
+    g <- 4;
+    expect_equal (inject (function (d) d + g, define (d = function () 5, binder = binder ())), 9);
+  });
 });

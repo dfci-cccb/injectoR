@@ -147,7 +147,7 @@ shim <- function (..., library.paths = .libPaths (), callback = function () bind
                 getExportedValue (namespace, export))) (loadNamespace(package, lib.loc = library.paths))));
   lapply (1:length (exports), function (i) binder[[ names (exports)[ i ] ]] <- singleton (function () exports[[ i ]]));
   inject (callback, binder);
-}
+};
 
 #' Injects the callback function
 #' 
@@ -180,4 +180,4 @@ inject <- function (callback, binder = .binder) {
                                                      else stop (paste ("Unbound dependency on", key))
                                          else value) (NULL), args));
   eval (body (callback), args);
-}
+};

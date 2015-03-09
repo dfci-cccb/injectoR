@@ -1,5 +1,5 @@
 Package: injectoR
-Version: 0.2.0
+Version: 0.2.0.9005
 Date: 2014-10-30
 Title: R Dependency Injection
 Authors@R: c(person("Lev Kuznetsov", "Developer", email = "levk@jimmy.harvard.edu", role = c("aut", "cre")))
