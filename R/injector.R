@@ -31,6 +31,8 @@ NULL;
 #' @return result of the injected callback if one is specified,
 #' otherwise the new binder
 #' @export
+#' @examples
+#' b <- binder ()
 binder <- function (parent = .binder, callback = function (binder) binder)
   callback (new.env (parent = parent));
 
@@ -40,6 +42,8 @@ binder <- function (parent = .binder, callback = function (binder) binder)
 #' @param provider unscoped delegate, no argument function responsible
 #' for provision
 #' @export
+#' @examples
+#' define (three = function () 3, scope = singleton, binder = binder ())
 singleton <- function (provider)
   (function (value) function () if (is.null (value)) value <<- provider () else value) (NULL);
 
@@ -71,6 +75,8 @@ default <- function (provider) provider;
 #' @param binder for this binding, if omitted the new binding is added
 #' to the root binder
 #' @export
+#' @examples
+#' define (hello = function () 'world', binder = binder ())
 define <- function (..., scope = default, binder = .binder) {
   bindings <- list (...);
   lapply (names (bindings), function (key)
@@ -102,6 +108,8 @@ define <- function (..., scope = default, binder = .binder) {
 #' omitted defaults to provide on injection; please be aware that the
 #' scope is called without key for unnamed multibinding
 #' @export
+#' @examples
+#' multibind ('keys', binder = binder ()) (function () 'skeleton')
 multibind <- function (key, scope = default,
                        combine = function (this, parent) c (this, parent ()), binder = .binder) 
   if (exists (key, envir = binder, inherits = FALSE)) attr (binder[[ key ]], 'multibind') else {
@@ -139,6 +147,8 @@ multibind <- function (key, scope = default,
 #' @param binder for this shim
 #' @return result of the callback if specified, binder otherwise
 #' @export
+#' @examples
+#' shim ('injectoR', binder = binder ())
 shim <- function (..., library.paths = .libPaths (), callback = function () binder, binder = .binder) {
   exports <- unlist (lapply (list (...), function (package)
     if (requireNamespace (package, lib.loc = library.paths)) (function (namespace)
@@ -160,6 +170,13 @@ shim <- function (..., library.paths = .libPaths (), callback = function () bind
 #' omitted
 #' @return result of the injected callback evaluation
 #' @export
+#' @examples
+#' inject (function (two) two, define (two = function () 2, binder = binder ()))
+#' inject (function (f) f (5),
+#'         define (f = function (f)
+#'                       function (x)
+#'                         if (x < 3) 1 else (f (x - 1) + f (x - 2)),
+#'                 binder = binder ()))
 inject <- function (callback, binder = .binder) {
   args <- new.env (parent = environment (callback));
   args$missing <- function (x) {

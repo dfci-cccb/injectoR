@@ -2,20 +2,19 @@
 
 injectoR
 ========
-
 Dependency injection for R
 
 You can install the project directly via github with ```devtools::install_github ('dfci-cccb/injectoR')```
 
 ========
-
 Injector is meant to ease development making it clear what parts of your script depend on what
 other functionality without cluttering your interface
 
 ```R
-define (three = function () 3)
-        power = function (power) function (x, n) if (n < 1) 1 else x * power (x, n - 1),
-        cube = function (power, three) function (x) power (x, three));
+define (three = function () 3,
+        power = function (power)
+                  function (x, n) if (n < 1) 1 else x * power (x, n - 1));
+define (cube = function (power, three) function (x) power (x, three));
 
 inject (function (cube) cube (4));
 ```
@@ -24,13 +23,27 @@ Define collections to accumulate bindings and have the collection injected as a 
 named) list
 
 ```R
-add.food <- multibind ('food')
+add.food <- multibind ('food');
 
 add.food (function () 'pizza');
 multibind ('food') (function () 'ice cream');
 add.food (pretzel = function () 'pretzel');
 
 inject (function (food) food);
+
+# Useful as plugin system, you can chain your dependencies recursively
+define (dispatch = function (listeners)
+                     function (event, context)
+                       listeners[[ event ]] (context));
+multibind ('listeners') (yell = function () function (context)
+                                              print (context),
+                         follow = function (dispatch)
+                                    function (context) {
+                                      print ('follow');
+                                      dispatch ('yell', context);
+                                    });
+
+inject (function (dispatch) dispatch ('follow', 'hello world'));
 ```
 
 Shimming a library will define each of its globally exported variables. Shimming does not call
@@ -55,11 +68,9 @@ shim (s4 = 'stats4', callback = function (s4.AIC) {
 shim (b = 'base', s = 'stats',
       callback = function (b.loadNamespace, b.getNamespaceExports, s.setNames) {
   # Define something useful into your root binder
-  define (exports = function () function (...) {
-    packages = c (...);
-    lapply (s.setNames (nm = packages), function (package)
-      b.getNamespaceExports (b.loadNamespace (package)));
-  });
+  define (exports = function () function (...)
+    lapply (s.setNames (nm = c (...)), function (package)
+      b.getNamespaceExports (b.loadNamespace (package))));
 }, binder = binder ());
 ```
 

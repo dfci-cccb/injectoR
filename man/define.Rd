@@ -31,4 +31,7 @@ to the root binder}
 \description{
 Creates a key to factory binding
 }
+\examples{
+define (hello = function () 'world', binder = binder ())
+}
 

@@ -22,4 +22,12 @@ result of the injected callback evaluation
 \description{
 Injects the callback function
 }
+\examples{
+inject (function (two) two, define (two = function () 2, binder = binder ()))
+inject (function (f) f (5),
+        define (f = function (f)
+                      function (x)
+                        if (x < 3) 1 else (f (x - 1) + f (x - 2)),
+                binder = binder ()))
+}
 

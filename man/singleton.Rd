@@ -15,4 +15,7 @@ for provision}
 Singleton scope, bindings of this scope are provided once, on
 initial demand
 }
+\examples{
+define (three = function () 3, scope = singleton, binder = binder ())
+}
 

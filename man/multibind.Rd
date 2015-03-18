@@ -38,4 +38,7 @@ scope is called without key for unnamed multibinding
 \description{
 Aggregates multiple factories under one key
 }
+\examples{
+multibind ('keys', binder = binder ()) (function () 'skeleton')
+}
 

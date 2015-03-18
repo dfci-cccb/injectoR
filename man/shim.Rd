@@ -28,4 +28,7 @@ result of the callback if specified, binder otherwise
 \description{
 Shims libraries
 }
+\examples{
+shim ('injectoR', binder = binder ())
+}
 

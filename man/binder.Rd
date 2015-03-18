@@ -20,4 +20,7 @@ otherwise the new binder
 \description{
 Binder factory
 }
+\examples{
+b <- binder ()
+}
 
