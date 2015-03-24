@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="injectoR : Dependency Injection Framework for R">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>injectoR</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/dfci-cccb/injectoR">View on GitHub</a>
+
+          <h1 id="project_title">injectoR</h1>
+          <h2 id="project_tagline">Dependency Injection Framework for R</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/dfci-cccb/injectoR/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/dfci-cccb/injectoR/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <p>Injector is meant to ease development making it clear what parts of your script depend on what
+other functionality without cluttering your interface</p>
+
+<div class="highlight highlight-R"><pre>define (<span class="pl-v">three</span> <span class="pl-k">=</span> <span class="pl-k">function</span> () <span class="pl-c1">3</span>,
+        <span class="pl-v">power</span> <span class="pl-k">=</span> <span class="pl-k">function</span> (<span class="pl-smi">power</span>)
+                  <span class="pl-k">function</span> (<span class="pl-smi">x</span>, <span class="pl-smi">n</span>) <span class="pl-k">if</span> (<span class="pl-smi">n</span> <span class="pl-k">&lt;</span> <span class="pl-c1">1</span>) <span class="pl-c1">1</span> <span class="pl-k">else</span> <span class="pl-smi">x</span> <span class="pl-k">*</span> power (<span class="pl-smi">x</span>, <span class="pl-smi">n</span> <span class="pl-k">-</span> <span class="pl-c1">1</span>));
+define (<span class="pl-v">cube</span> <span class="pl-k">=</span> <span class="pl-k">function</span> (<span class="pl-smi">power</span>, <span class="pl-smi">three</span>) <span class="pl-k">function</span> (<span class="pl-smi">x</span>) power (<span class="pl-smi">x</span>, <span class="pl-smi">three</span>));
+
+inject (<span class="pl-k">function</span> (<span class="pl-smi">cube</span>) cube (<span class="pl-c1">4</span>));</pre></div>
+
+<p>Define collections to accumulate bindings and have the collection injected as a (optionally
+named) list</p>
+
+<div class="highlight highlight-R"><pre><span class="pl-smi">add.food</span> <span class="pl-k">&lt;-</span> multibind (<span class="pl-s"><span class="pl-pds">'</span>food<span class="pl-pds">'</span></span>);
+
+add.food (<span class="pl-k">function</span> () <span class="pl-s"><span class="pl-pds">'</span>pizza<span class="pl-pds">'</span></span>);
+multibind (<span class="pl-s"><span class="pl-pds">'</span>food<span class="pl-pds">'</span></span>) (<span class="pl-k">function</span> () <span class="pl-s"><span class="pl-pds">'</span>ice cream<span class="pl-pds">'</span></span>);
+add.food (<span class="pl-v">pretzel</span> <span class="pl-k">=</span> <span class="pl-k">function</span> () <span class="pl-s"><span class="pl-pds">'</span>pretzel<span class="pl-pds">'</span></span>);
+
+inject (<span class="pl-k">function</span> (<span class="pl-smi">food</span>) <span class="pl-smi">food</span>);
+
+<span class="pl-c"># Useful as plugin system, you can chain your dependencies recursively</span>
+define (<span class="pl-v">dispatch</span> <span class="pl-k">=</span> <span class="pl-k">function</span> (<span class="pl-smi">listeners</span>)
+                     <span class="pl-k">function</span> (<span class="pl-smi">event</span>, <span class="pl-smi">context</span>)
+                       <span class="pl-smi">listeners</span>[[ <span class="pl-smi">event</span> ]] (<span class="pl-smi">context</span>));
+multibind (<span class="pl-s"><span class="pl-pds">'</span>listeners<span class="pl-pds">'</span></span>) (<span class="pl-v">yell</span> <span class="pl-k">=</span> <span class="pl-k">function</span> () <span class="pl-k">function</span> (<span class="pl-smi">context</span>)
+                                              print (<span class="pl-smi">context</span>),
+                         <span class="pl-v">follow</span> <span class="pl-k">=</span> <span class="pl-k">function</span> (<span class="pl-smi">dispatch</span>)
+                                    <span class="pl-k">function</span> (<span class="pl-smi">context</span>) {
+                                      print (<span class="pl-s"><span class="pl-pds">'</span>follow<span class="pl-pds">'</span></span>);
+                                      dispatch (<span class="pl-s"><span class="pl-pds">'</span>yell<span class="pl-pds">'</span></span>, <span class="pl-smi">context</span>);
+                                    });
+
+inject (<span class="pl-k">function</span> (<span class="pl-smi">dispatch</span>) dispatch (<span class="pl-s"><span class="pl-pds">'</span>follow<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>hello world<span class="pl-pds">'</span></span>));</pre></div>
+
+<p>Shimming a library will define each of its globally exported variables. Shimming does not call
+library() so it will not export variables in the global namespace. Shimming and injecting is
+better than calling library() because it defines clear boundaries of dependency, and while an
+original result may depend on a library a derived will not have this explicit dependency 
+allowing you to switch the original implementations at will</p>
+
+<div class="highlight highlight-R"><pre>shim (<span class="pl-s"><span class="pl-pds">'</span>agrmt<span class="pl-pds">'</span></span>);
+
+inject (<span class="pl-k">function</span> (<span class="pl-smi">modes</span>) {
+  <span class="pl-c"># do stuff with modes()</span>
+});
+
+shim (<span class="pl-v">s4</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>stats4<span class="pl-pds">'</span></span>, <span class="pl-v">callback</span> <span class="pl-k">=</span> <span class="pl-k">function</span> (<span class="pl-smi">s4.AIC</span>) {
+  <span class="pl-c"># do stuff with stats4's AIC()</span>
+});
+
+<span class="pl-c"># Useful idiom for shimming libraries in an anonymous binder without</span>
+<span class="pl-c"># polluting the root binder (or whatever binder you're using)</span>
+shim (<span class="pl-v">b</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>base<span class="pl-pds">'</span></span>, <span class="pl-v">s</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>stats<span class="pl-pds">'</span></span>,
+      <span class="pl-v">callback</span> <span class="pl-k">=</span> <span class="pl-k">function</span> (<span class="pl-smi">b.loadNamespace</span>, <span class="pl-smi">b.getNamespaceExports</span>, <span class="pl-smi">s.setNames</span>) {
+  <span class="pl-c"># Define something useful into your root binder</span>
+  define (<span class="pl-v">exports</span> <span class="pl-k">=</span> <span class="pl-k">function</span> () <span class="pl-k">function</span> (<span class="pl-k">...</span>)
+    lapply (s.setNames (<span class="pl-v">nm</span> <span class="pl-k">=</span> c (<span class="pl-k">...</span>)), <span class="pl-k">function</span> (<span class="pl-smi">package</span>)
+      b.getNamespaceExports (b.loadNamespace (<span class="pl-smi">package</span>))));
+}, <span class="pl-v">binder</span> <span class="pl-k">=</span> binder ());</pre></div>
+
+<p>You may optionally inject or provide a default value</p>
+
+<div class="highlight highlight-R"><pre>define (<span class="pl-v">greeting</span> <span class="pl-k">=</span> <span class="pl-k">function</span> (<span class="pl-v">name</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>stranger<span class="pl-pds">"</span></span>) print (paste (<span class="pl-s"><span class="pl-pds">"</span>Greetings,<span class="pl-pds">"</span></span>, <span class="pl-smi">name</span>)));
+
+inject (<span class="pl-k">function</span> (<span class="pl-smi">greeting</span>) {});
+
+define (<span class="pl-v">name</span> <span class="pl-k">=</span> <span class="pl-k">function</span> () <span class="pl-s"><span class="pl-pds">'</span>Bob<span class="pl-pds">'</span></span>);
+
+inject (<span class="pl-k">function</span> (<span class="pl-smi">greeting</span>) {});</pre></div>
+
+<p>You may scope your bindings</p>
+
+<div class="highlight highlight-R"><pre>define (<span class="pl-v">counter</span> <span class="pl-k">=</span> <span class="pl-k">function</span> () {
+  <span class="pl-smi">count</span> <span class="pl-k">&lt;-</span> <span class="pl-c1">0</span>;
+  <span class="pl-k">function</span> () <span class="pl-smi">count</span> <span class="pl-k">&lt;&lt;-</span> <span class="pl-smi">count</span> <span class="pl-k">+</span> <span class="pl-c1">1</span>;
+}, <span class="pl-smi">singleton</span>);
+
+inject (<span class="pl-k">function</span> (<span class="pl-smi">counter</span>) {
+  print (counter ());
+});
+
+inject (<span class="pl-k">function</span> (<span class="pl-smi">counter</span>) {
+  print (counter ());
+});</pre></div>
+
+<p>Extensible!</p>
+
+<div class="highlight highlight-R"><pre><span class="pl-c"># Provide your own binding environment</span>
+<span class="pl-smi">binder</span> <span class="pl-k">&lt;-</span> binder ();
+
+define (<span class="pl-v">foo</span> <span class="pl-k">=</span> <span class="pl-k">function</span> (<span class="pl-v">bar</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>bar<span class="pl-pds">'</span></span>) {
+  <span class="pl-c"># Factory for foo</span>
+}, <span class="pl-v">scope</span> <span class="pl-k">=</span> <span class="pl-k">function</span> (<span class="pl-smi">provider</span>) {
+  <span class="pl-c"># The scope is called at definition time and is injected with the</span>
+  <span class="pl-c"># provider function; provider function takes no arguments and is</span>
+  <span class="pl-c"># responsible for provisioning the dependency, the scope function</span>
+  <span class="pl-c"># is responsible for appropriately calling it and caching result</span>
+  <span class="pl-c"># when necessary. Provider is the wrapped factory injection call</span>
+}, <span class="pl-v">binder</span> <span class="pl-k">=</span> <span class="pl-smi">binder</span>);</pre></div>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">injectoR maintained by <a href="https://github.com/dfci-cccb">dfci-cccb</a></p>
+        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-61122183-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+
+  </body>
+</html>
