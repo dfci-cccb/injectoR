@@ -4,8 +4,8 @@
 \alias{multibind}
 \title{Aggregates multiple factories under one key}
 \usage{
-multibind(key, scope = default, combine = function(this, parent) c(this,
-  parent()), binder = .binder)
+multibind(key, scope = default, combine = function(this, parent)
+  base::c(this, parent), binder = .binder)
 }
 \arguments{
 \item{key}{injectable bean identifier}

@@ -20,7 +20,7 @@
 NULL;
 
 #' Root binder
-.binder <- new.env (parent = emptyenv ());
+.binder <- new.env (parent = base::emptyenv ());
 
 #' Binder factory
 #' 
@@ -34,7 +34,7 @@ NULL;
 #' @examples
 #' b <- binder ()
 binder <- function (parent = .binder, callback = function (binder) binder)
-  callback (new.env (parent = parent));
+  callback (base::new.env (parent = parent));
 
 #' Singleton scope, bindings of this scope are provided once, on
 #' initial demand
@@ -45,7 +45,7 @@ binder <- function (parent = .binder, callback = function (binder) binder)
 #' @examples
 #' define (three = function () 3, scope = singleton, binder = binder ())
 singleton <- function (provider)
-  (function (value) function () if (is.null (value)) value <<- provider () else value) (NULL);
+  (function (value) function () if (base::is.null (value)) value <<- provider () else value) (NULL);
 
 #' Default scope, bindings are provisioned each time a bean is
 #' injected
@@ -78,8 +78,8 @@ default <- function (provider) provider;
 #' @examples
 #' define (hello = function () 'world', binder = binder ())
 define <- function (..., scope = default, binder = .binder) {
-  bindings <- list (...);
-  lapply (names (bindings), function (key)
+  bindings <- base::list (...);
+  base::lapply (base::names (bindings), function (key)
     binder[[ key ]] <- scope (function () inject (bindings[[ key ]], binder)));
   binder;
 };
@@ -111,26 +111,23 @@ define <- function (..., scope = default, binder = .binder) {
 #' @examples
 #' multibind ('keys', binder = binder ()) (function () 'skeleton')
 multibind <- function (key, scope = default,
-                       combine = function (this, parent) c (this, parent ()), binder = .binder) 
-  if (exists (key, envir = binder, inherits = FALSE)) attr (binder[[ key ]], 'multibind') else {
-    providers <- list ();
+                       combine = function (this, parent) base::c (this, parent), binder = .binder) 
+  if (base::exists (key, envir = binder, inherits = FALSE)) base::attr (binder[[ key ]], 'multibind') else {
+    providers <- base::list ();
     binder[[ key ]] <- scope (function () {
-                                parent <- parent.env (binder);
-                                combine (lapply (providers, function (provider) provider ()),
-                                         function () if (exists (key, envir = parent)) get (key, envir = parent) ()
-                                                     else list ())
-                              });
-    attr (binder[[ key ]],
-          'multibind') <- function (..., scope = default) {
-                            factories <- list (...);
-                            providers <<- c (providers,
-                                             lapply (setNames (1:length (factories), names (factories)),
-                                                     function (i) (
-                                                       function (name, factory){
-                                                         force (factory);
-                                                         scope (function () inject (factory, binder))
-                                                       }) (names (factories)[ i ], factories[[ i ]])));
-                          };
+      parent <- base::parent.env (binder);
+      combine (base::lapply (providers, function (provider) provider ()),
+               if (base::exists (key, envir = parent)) base::get (key, envir = parent) () else base::list ())
+    });
+    base::attr (binder[[ key ]], 'multibind') <- function (..., scope = default) {
+      factories <- base::list (...);
+      providers <<- base::c (providers,
+                             base::lapply (setNames (1:length (factories), base::names (factories)), function (i) (
+        function (name, factory) {
+          base::force (factory);
+          scope (function () inject (factory, binder))
+        }) (base::names (factories)[ i ], factories[[ i ]])));
+    };
   };
 
 #' Shims libraries
@@ -148,14 +145,15 @@ multibind <- function (key, scope = default,
 #' @return result of the callback if specified, binder otherwise
 #' @export
 #' @examples
-#' shim ('injectoR', binder = binder ())
+#' shim ('injectoR', callback = function (inject) inject, binder = binder ())
 shim <- function (..., library.paths = .libPaths (), callback = function () binder, binder = .binder) {
-  exports <- unlist (lapply (list (...), function (package)
-    if (requireNamespace (package, lib.loc = library.paths)) (function (namespace)
-      lapply (setNames (nm = getNamespaceExports (namespace)),
-              function (export)
-                getExportedValue (namespace, export))) (loadNamespace(package, lib.loc = library.paths))));
-  lapply (1:length (exports), function (i) binder[[ names (exports)[ i ] ]] <- singleton (function () exports[[ i ]]));
+  exports <- base::unlist (base::lapply (base::list (...), function (package)
+    if (base::requireNamespace (package, lib.loc = library.paths)) (function (namespace)
+      base::lapply (setNames (nm = base::getNamespaceExports (namespace)),
+                    function (export)
+                      base::getExportedValue (namespace, export))) (base::loadNamespace (package, lib.loc = library.paths))));
+  base::lapply (1:base::length (exports),
+                function (i) binder[[ base::names (exports)[ i ] ]] <- singleton (function () exports[[ i ]]));
   inject (callback, binder);
 };
 
@@ -172,29 +170,28 @@ shim <- function (..., library.paths = .libPaths (), callback = function () bind
 #' @export
 #' @examples
 #' inject (function (two) two, define (two = function () 2, binder = binder ()))
-#' inject (function (f) f (5),
-#'         define (f = function (f)
-#'                       function (x)
-#'                         if (x < 3) 1 else (f (x - 1) + f (x - 2)),
-#'                 binder = binder ()))
+#' inject (function (power) power (2, 4), 
+#'         define (power = function (power) function (x, n) if (n < 1) 1 else x * power (x, n - 1)))
+#' inject (function (fibonacci) fibonacci (8),
+#'         define (fibonacci = function (fibonacci)
+#'           function (n) if (n < 3) 1
+#'                        else fibonacci (n - 1) + fibonacci (n - 2), binder = binder ()))
 inject <- function (callback, binder = .binder) {
-  args <- new.env (parent = environment (callback));
+  args <- base::new.env (parent = base::environment (callback));
   args$missing <- function (x) {
-    key <- as.character (match.call ()$x);
-    if (!identical (parent.frame (), args)) missing (x)
-    else if (!(key %in% names (formals (callback)))) stop ("'missing' can only be used for arguments")
-    else !exists (key, envir = binder);
+    key <- base::as.character (base::match.call ()$x);
+    if (!base::identical (base::parent.frame (), args)) base::missing (x)
+    else if (!match (key, base::names (base::formals (callback)), nomatch = 0) > 0)
+      base::stop ("'missing' can only be used for arguments")
+    else !base::exists (key, envir = binder);
   };
-  lapply (names (formals (callback)),
-          function (key)
-            makeActiveBinding (key, (function (value)
-                                       function (x) 
-                                         if (!missing (x)) value <<- x
-                                         else if (is.null (value))
-                                           value <<- if (exists (key, envir = binder)) get (key, envir = binder) ()
-                                                     else if (formals (callback)[[ key ]] != '')
-                                                       formals (callback)[[ key ]]
-                                                     else stop (paste ("Unbound dependency on", key))
-                                         else value) (NULL), args));
-  eval (body (callback), args);
+  base::lapply (base::names (base::formals (callback)), function (key)
+    base::makeActiveBinding (key, (function (value) function (x) 
+      if (!base::missing (x)) value <<- x
+      else if (base::is.null (value))
+        value <<- if (base::exists (key, envir = binder)) base::get (key, envir = binder) ()
+        else if (base::formals (callback)[[ key ]] != '') base::formals (callback)[[ key ]]
+        else base::stop (base::paste ("Unbound dependency on", key))
+      else value) (NULL), args));
+  base::return (base::eval (base::body (callback), args));
 };

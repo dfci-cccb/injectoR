@@ -29,6 +29,6 @@ result of the callback if specified, binder otherwise
 Shims libraries
 }
 \examples{
-shim ('injectoR', binder = binder ())
+shim ('injectoR', callback = function (inject) inject, binder = binder ())
 }
 

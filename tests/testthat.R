@@ -1,4 +1,4 @@
-library(testthat)
-library(injectoR)
+library (testthat);
+library (injectoR);
 
-test_check("injectoR")
+test_check ('injectoR');

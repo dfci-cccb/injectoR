@@ -62,7 +62,7 @@ describe ("Default scope", {
 });
 
 describe ("Binding definition", {
-  it ("Should be a function accepting key, factory, scope, and binder", {
+  it ("Should be a function accepting ..., scope, and binder", {
     expect_true (is.function (define));
     expect_equal (names (formals (define)), c ('...', 'scope', 'binder'));
   });
