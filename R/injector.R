@@ -20,7 +20,7 @@
 NULL;
 
 #' Root binder
-.binder <- new.env (parent = base::emptyenv ());
+.binder <- base::new.env (parent = base::emptyenv ());
 
 #' Binder factory
 #' 
@@ -193,5 +193,5 @@ inject <- function (callback, binder = .binder) {
         else if (base::formals (callback)[[ key ]] != '') base::formals (callback)[[ key ]]
         else base::stop (base::paste ("Unbound dependency on", key))
       else value) (NULL), args));
-  base::return (base::eval (base::body (callback), args));
+  base::eval (base::body (callback), args);
 };
