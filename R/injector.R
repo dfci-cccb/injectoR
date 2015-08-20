@@ -148,7 +148,8 @@ multibind <- function (key, scope = default,
 #' shim ('injectoR', callback = function (inject) inject, binder = binder ())
 shim <- function (..., library.paths = .libPaths (), callback = function () binder, binder = .binder) {
   exports <- base::unlist (base::lapply (base::list (...), function (package)
-    if (base::requireNamespace (package, lib.loc = library.paths)) (function (namespace)
+    if (!base::is.character (package)) base::stop ('library name list must consist of strings only')
+    else if (base::requireNamespace (package, lib.loc = library.paths)) (function (namespace)
       base::lapply (setNames (nm = base::getNamespaceExports (namespace)),
                     function (export)
                       base::getExportedValue (namespace, export))) (base::loadNamespace (package, lib.loc = library.paths))));

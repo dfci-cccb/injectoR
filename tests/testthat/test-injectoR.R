@@ -14,8 +14,8 @@ describe ("Binder factory", {
     expect_equal (parent.env (b2), b);
   });
 
-  it ("Should inject callback", expect_true (binder (callback = function (binder) {
-    expect_true (is.environment (binder));
+  it ("Should inject callback", expect_true (binder (callback = function (b) {
+    expect_true (is.environment (b));
     TRUE;
   })));
 });
@@ -140,6 +140,11 @@ describe ("Shim binding", {
                               define (f = function (f) function (x) if (x < 1) 1 else x * f (x - 1),
                                       binder = binder ())),
                           binder = binder ()), 120));
+
+  it ("Should throw on non string argument in library name list", tryCatch ({
+    shim ('injectoR', function (inject) inject, binder = binder ());
+    fail ('Did not throw error on non string argument to library list');
+  }, error = function (e) expect_equal (e$message, 'library name list must consist of strings only')));
 });
 
 describe ("Injection", {
