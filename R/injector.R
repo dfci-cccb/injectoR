@@ -137,7 +137,9 @@ multibind <- function (key, scope = default,
 #' list format (for example shim(s4='stats4',callback=function(s4.AIC)))
 #' all exported variable names from that library will be prepended with
 #' that name and a dot (as in the example); if a library cannot be
-#' loaded, no bindings are created and no errors are thrown
+#' loaded, no bindings are created for that library and no errors are
+#' thrown (but there is an error to console as reported by
+#' requireNamespace)
 #' @param library.paths to use for loading namespace
 #' @param callback injected for convenience using the binder specified
 #' after shim is completed, if omitted the call returns the binder
@@ -148,9 +150,9 @@ multibind <- function (key, scope = default,
 #' shim ('injectoR', callback = function (inject) inject, binder = binder ())
 shim <- function (..., library.paths = .libPaths (), callback = function () binder, binder = .binder) {
   exports <- base::unlist (base::lapply (base::list (...), function (package)
-    if (!base::is.character (package)) base::stop ('library name list must consist of strings only')
+    if (!base::is.character (package)) base::stop ("Library name list must consist of strings only")
     else if (base::requireNamespace (package, lib.loc = library.paths)) (function (namespace)
-      base::lapply (setNames (nm = base::getNamespaceExports (namespace)),
+      base::lapply (stats::setNames (nm = base::getNamespaceExports (namespace)),
                     function (export)
                       base::getExportedValue (namespace, export))) (base::loadNamespace (package, lib.loc = library.paths))));
   base::lapply (1:base::length (exports),
@@ -182,7 +184,7 @@ inject <- function (callback, binder = .binder) {
   args$missing <- function (x) {
     key <- base::as.character (base::match.call ()$x);
     if (!base::identical (base::parent.frame (), args)) base::missing (x)
-    else if (!match (key, base::names (base::formals (callback)), nomatch = 0) > 0)
+    else if (!base::match (key, base::names (base::formals (callback)), nomatch = 0) > 0)
       base::stop ("'missing' can only be used for arguments")
     else !base::exists (key, envir = binder);
   };

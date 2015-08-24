@@ -144,7 +144,7 @@ describe ("Shim binding", {
   it ("Should throw on non string argument in library name list", tryCatch ({
     shim ('injectoR', function (inject) inject, binder = binder ());
     fail ('Did not throw error on non string argument to library list');
-  }, error = function (e) expect_equal (e$message, 'library name list must consist of strings only')));
+  }, error = function (e) expect_equal (e$message, 'Library name list must consist of strings only')));
 });
 
 describe ("Injection", {

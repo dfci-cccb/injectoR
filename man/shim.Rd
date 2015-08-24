@@ -13,7 +13,9 @@ variable to the binder; if a library name is specified in a named
 list format (for example shim(s4='stats4',callback=function(s4.AIC)))
 all exported variable names from that library will be prepended with
 that name and a dot (as in the example); if a library cannot be
-loaded, no bindings are created and no errors are thrown}
+loaded, no bindings are created for that library and no errors are
+thrown (but there is an error to console as reported by
+requireNamespace)}
 
 \item{library.paths}{to use for loading namespace}
 
