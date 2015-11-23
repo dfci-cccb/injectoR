@@ -21,7 +21,7 @@ describe ("Binder factory", {
 });
 
 describe ("Singleton scope", {
-  it ("Should be a function accepting key and provider", {
+  it ("Should be a function accepting provider", {
     expect_true (is.function (singleton));
     expect_equal (names (formals (singleton)), 'provider');
   });
@@ -42,7 +42,7 @@ describe ("Singleton scope", {
 });
 
 describe ("Default scope", {
-  it ("Should be a function accepting key and provider", {
+  it ("Should be a function accepting provider", {
     expect_true (is.function (default));
     expect_equal (names (formals (default)), 'provider');
   });
@@ -90,7 +90,7 @@ describe ("Multibinder definition", {
 
   it ("Multibinder aggregator should be a function accepting ... and scope", {
     b <- binder ();
-    a <- multibind ('foo', b = binder ());
+    a <- multibind ('foo', binder = binder ());
     expect_true (is.function (a));
     expect_equal (names (formals (a)), c ('...', 'scope'));
   });
@@ -173,22 +173,22 @@ describe ("Injection", {
   it ("Should inject multibound beans", {
     b <- binder ();
 
-    multibind ('foo', b = b) (one = function () 1)
-    multibind ('foo', b = b) (two = function () 2);
-    multibind ('foo', b = b) (three = function () 3);
-    multibind ('foo', b = b) (four = function () 4);
+    multibind ('foo', binder = b) (one = function () 1)
+    multibind ('foo', binder = b) (two = function () 2);
+    multibind ('foo', binder = b) (three = function () 3);
+    multibind ('foo', binder = b) (four = function () 4);
     expect_equal (inject (function (foo) foo, b), list (one = 1, two = 2, three = 3, four = 4));
     
-    multibind ('bar', b = b) (one = function () 1, two = function () 2);
-    multibind ('bar', b = b) (three = function () 3, four = function () 4);
+    multibind ('bar', binder = b) (one = function () 1, two = function () 2);
+    multibind ('bar', binder = b) (three = function () 3, four = function () 4);
     expect_equal (inject (function (bar) bar, b), list (one = 1, two = 2, three = 3, four = 4));
   });
 
   it ("Should injected multibound beans with respected scopes", {
     b <- binder ();
     c <- function () { c <- 0; function () c <<- c + 1; };
-    multibind ('foo', b = b) (p = c);
-    multibind ('foo', b = b) (s = c, scope = singleton);
+    multibind ('foo', binder = b) (p = c);
+    multibind ('foo', binder = b) (s = c, scope = singleton);
     expect_equal (inject (function (foo) list (p = foo$p (), s = foo$s ()), b), list (p = 1, s = 1));
     expect_equal (inject (function (foo) list (p = foo$p (), s = foo$s ()), b), list (p = 1, s = 2));
   });
@@ -209,7 +209,7 @@ describe ("Injection", {
 
   it ("Should throw error on access unbound dependency", {
     b <- binder ();
-    define (t = function (h) h, b = b);
+    define (t = function (h) h, binder = b);
     tryCatch ({
       inject (function (t) t, b);
       fail ('Did not throw on access to missing variable');

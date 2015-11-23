@@ -1,0 +1,6 @@
+^\.travis\.yml$
+^cran-comments\.md$
+^LICENSE$
+^appveyor\.yml$
+^.gitignore$
+^.project$
