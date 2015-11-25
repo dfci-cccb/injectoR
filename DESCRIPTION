@@ -1,16 +1,18 @@
 Package: injectoR
-Version: 0.2.4.9000
-Date: 2015-11-23
+Version: 0.2.4
+Date: 2015-11-25
 Title: R Dependency Injection
 Author: Lev Kuznetsov
 Maintainer: Lev Kuznetsov <levk@jimmy.harvard.edu>
-Depends: R (>= 3.1.0)
-Suggests: testthat
-Description: R dependency injection framework.
-  Dependency injection allows a program design to follow the dependency inversion
-  principle. The user delegates to external code (the injector) the responsibility
-  of providing its dependencies. This separates the responsibilities of use and
-  construction.
+Depends:
+    R (>= 3.1.0)
+Suggests:
+    testthat
+Description: R dependency injection framework. Dependency injection allows
+    a program design to follow the dependency inversion principle. The user
+    delegates to external code (the injector) the responsibility of providing its
+    dependencies. This separates the responsibilities of use and construction.
 License: LGPL (>= 3)
 URL: https://github.com/dfci-cccb/injectoR
 BugReports: https://github.com/dfci-cccb/injectoR/issues
+RoxygenNote: 5.0.1

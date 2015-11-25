@@ -119,12 +119,12 @@ multibind <- function (key, scope = default,
       combine (base::lapply (providers, function (provider) provider ()),
                if (base::exists (key, envir = parent)) base::get (key, envir = parent) () else base::list ())
     });
-    base::attr (binder[[ key ]], 'multibind') <- function (..., scope = default) {
-      factories <- base::list (...);
-      providers <<- base::c (providers, base::lapply (stats::setNames (1:length (factories),
-                                                      base::names (factories)), function (i) (
-        function (factory) scope (function () inject (factory, binder))) (factories[[ i ]])));
-    };
+    base::attr (binder[[ key ]], 'multibind') <- function (..., scope = default)
+      providers <<- base::c (providers,
+                             base::lapply (base::list (...), function (factory) {
+        base::force (factory);
+        scope (function () inject (factory, binder));
+      }));
   };
 
 #' Shims libraries
