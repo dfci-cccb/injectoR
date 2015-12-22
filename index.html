@@ -18,12 +18,9 @@
         <h1>injectoR</h1>
         <p>Dependency Injection Framework for R</p>
 
-        <p class="view"><a href="https://github.com/dfci-cccb/injectoR">View the Project on GitHub <small>dfci-cccb/injectoR</small></a></p>
-
-
         <ul>
-          <li><a href="https://github.com/dfci-cccb/injectoR/zipball/master">Download <strong>ZIP File</strong></a></li>
           <li><a href="https://github.com/dfci-cccb/injectoR/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://cran.r-project.org/web/packages/injectoR/index.html">View On <strong>CRAN</strong></a></li>
           <li><a href="https://github.com/dfci-cccb/injectoR">View On <strong>GitHub</strong></a></li>
         </ul>
       </header>
@@ -79,7 +76,9 @@ shim (<span class="pl-v">b</span> <span class="pl-k">=</span> <span class="pl-s"
   define (<span class="pl-v">exports</span> <span class="pl-k">=</span> <span class="pl-k">function</span> () <span class="pl-k">function</span> (<span class="pl-k">...</span>)
     lapply (s.setNames (<span class="pl-v">nm</span> <span class="pl-k">=</span> c (<span class="pl-k">...</span>)), <span class="pl-k">function</span> (<span class="pl-smi">package</span>)
       b.getNamespaceExports (b.loadNamespace (<span class="pl-smi">package</span>))));
-}, <span class="pl-v">binder</span> <span class="pl-k">=</span> binder ());</pre></div>
+}, <span class="pl-v">binder</span> <span class="pl-k">=</span> binder ());
+
+inject (function (exports) exports);</pre></div>
 
 <p>You may optionally inject or provide a default value</p>
 
